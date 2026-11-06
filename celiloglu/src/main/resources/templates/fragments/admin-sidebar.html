@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="az" xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside th:fragment="sidebar(activePage)"
+    class="w-64 bg-white dark:bg-[#1e1e1e] text-gray-800 dark:text-[#e0e0e0] flex flex-col hidden md:flex flex-shrink-0 shadow-xl z-20 border-r border-gray-200 dark:border-[#333333] transition-colors duration-300">
+    <div class="h-20 flex items-center px-8 border-b border-gray-200 dark:border-[#333333]">
+        <a href="/admin" th:href="@{${isCashier ? '/admin/payments' : (isWarehouse ? '/admin/orders' : '/admin')}}"
+            class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary dark:text-[#e0e0e0] dark:!bg-none tracking-tight dark:hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-all duration-300">Cəliloğlu
+            Admin</a>
+    </div>
+    <nav class="flex-1 overflow-y-auto py-4">
+        <!-- Standalone Admin Pages Menu (activePage == 'categories' or activePage == 'car-brands' or activePage == 'users' or activePage == 'orders' or activePage == 'payments' or activePage == 'analytics' or activePage == 'team') -->
+        <ul th:if="${activePage == 'categories' or activePage == 'car-brands' or activePage == 'users' or activePage == 'orders' or activePage == 'payments' or activePage == 'analytics' or activePage == 'team'}" class="space-y-1 px-3">
+            <li th:if="${canAccessAdminDashboard}">
+                <a href="/admin#dashboard" th:href="@{/admin#dashboard}"
+                    class="flex items-center px-4 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-colors font-medium">
+                    <svg class="h-5 w-5 mr-3 text-gray-600 dark:text-gray-400" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    İdarə Paneli
+                </a>
+            </li>
+            <li th:if="${canAccessOrders}">
+                <a href="/admin/orders" th:href="@{/admin/orders}"
+                    class="flex items-center px-4 py-3 rounded-xl transition-colors font-medium"
+                    th:classappend="${activePage == 'orders'} ? ' bg-primary/10 dark:bg-primary text-primary dark:text-[#e0e0e0] dark:shadow-[0_0_15px_rgba(30,86,49,0.5)]' : ' text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5'">
+                    <svg class="h-5 w-5 mr-3" th:classappend="${activePage == 'orders'} ? 'text-primary dark:text-[#e0e0e0]' : 'text-gray-600 dark:text-gray-400'" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Sifarişlər
+                </a>
+            </li>
+            <li th:if="${canAccessProducts}">
+                <a href="/admin?tab=products" th:href="@{/admin(tab='products')}"
+                    class="flex items-center px-4 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-colors font-medium">
+                    <svg class="h-5 w-5 mr-3 text-gray-600 dark:text-gray-400" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    Məhsullar
+                </a>
+            </li>
+            <li th:if="${canAccessProducts}">
+                <a href="/admin/categories" th:href="@{/admin/categories}"
+                    class="flex items-center px-4 py-3 rounded-xl transition-colors font-medium"
+                    th:classappend="${activePage == 'categories'} ? ' bg-primary/10 dark:bg-primary text-primary dark:text-[#e0e0e0] dark:shadow-[0_0_15px_rgba(30,86,49,0.5)]' : ' text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5'">
+                    <svg class="h-5 w-5 mr-3" th:classappend="${activePage == 'categories'} ? 'text-primary dark:text-[#e0e0e0]' : 'text-gray-600 dark:text-gray-400'" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                    Kateqoriyalar
+                </a>
+            </li>
+            <li th:if="${canAccessProducts}">
+                <a href="/admin/car-brands" th:href="@{/admin/car-brands}"
+                    class="flex items-center px-4 py-3 rounded-xl transition-colors font-medium"
+                    th:classappend="${activePage == 'car-brands'} ? ' bg-primary/10 dark:bg-primary text-primary dark:text-[#e0e0e0] dark:shadow-[0_0_15px_rgba(30,86,49,0.5)]' : ' text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5'">
+                    <svg class="h-5 w-5 mr-3" th:classappend="${activePage == 'car-brands'} ? 'text-primary dark:text-[#e0e0e0]' : 'text-gray-600 dark:text-gray-400'" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M5 13l4 0m6 0l4 0m-14 4h14a2 2 0 002-2v-3a2 2 0 00-.586-1.414l-2.828-2.828A2 2 0 0016.172 7H7.828a2 2 0 00-1.414.586L3.586 10.414A2 2 0 003 11.828V15a2 2 0 002 2zm1-2a1 1 0 100-2 1 1 0 000 2zm10 0a1 1 0 100-2 1 1 0 000 2z" />
+                    </svg>
+                    Avtomobil markaları
+                </a>
+            </li>
+            <li th:if="${canAccessUsers}">
+                <a href="/admin/users" th:href="@{/admin/users}"
+                    class="flex items-center px-4 py-3 rounded-xl transition-colors font-medium"
+                    th:classappend="${activePage == 'users'} ? ' bg-primary/10 dark:bg-primary text-primary dark:text-[#e0e0e0] dark:shadow-[0_0_15px_rgba(30,86,49,0.5)]' : ' text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5'">
+                    <svg class="h-5 w-5 mr-3" th:classappend="${activePage == 'users'} ? 'text-primary dark:text-[#e0e0e0]' : 'text-gray-600 dark:text-gray-400'" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    İstifadəçilər
+                </a>
+            </li>
+            <li th:if="${canAccessAnalytics}">
+                <a href="/admin/analytics" th:href="@{/admin/analytics}"
+                    title="Müştəri Hesablaşmaları"
+                    class="flex items-center px-4 py-3 rounded-xl transition-colors font-medium"
+                    th:classappend="${activePage == 'analytics'} ? ' bg-primary/10 dark:bg-primary text-primary dark:text-[#e0e0e0] dark:shadow-[0_0_15px_rgba(30,86,49,0.5)]' : ' text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5'">
+                    <svg class="h-5 w-5 mr-3" th:classappend="${activePage == 'analytics'} ? 'text-primary dark:text-[#e0e0e0]' : 'text-gray-600 dark:text-gray-400'" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    Müştəri Hesablaşmaları
+                </a>
+            </li>
+            <li th:if="${canAccessPayments}">
+                <a href="/admin/payments" th:href="@{/admin/payments}"
+                    class="flex items-center px-4 py-3 rounded-xl transition-colors font-medium"
+                    th:classappend="${activePage == 'payments'} ? ' bg-primary/10 dark:bg-primary text-primary dark:text-[#e0e0e0] dark:shadow-[0_0_15px_rgba(30,86,49,0.5)]' : ' text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5'">
+                    <svg class="h-5 w-5 mr-3" th:classappend="${activePage == 'payments'} ? 'text-primary dark:text-[#e0e0e0]' : 'text-gray-600 dark:text-gray-400'" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    Ödənişlər (Kassa)
+                </a>
+            </li>
+            <li th:if="${isSuperAdmin}">
+                <a href="/admin/team" th:href="@{/admin/team}"
+                    class="flex items-center px-4 py-3 rounded-xl transition-colors font-medium"
+                    th:classappend="${activePage == 'team'} ? ' bg-primary/10 dark:bg-primary text-primary dark:text-[#e0e0e0] dark:shadow-[0_0_15px_rgba(30,86,49,0.5)]' : ' text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5'">
+                    <svg class="h-5 w-5 mr-3" th:classappend="${activePage == 'team'} ? 'text-primary dark:text-[#e0e0e0]' : 'text-gray-600 dark:text-gray-400'" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    Komanda və İcazələr
+                </a>
+            </li>
+        </ul>
+
+        <!-- Admin Main Page Menu (activePage != 'categories' and activePage != 'car-brands' and activePage != 'users' and activePage != 'orders' and activePage != 'payments' and activePage != 'analytics' and activePage != 'team') -->
+        <ul th:unless="${activePage == 'categories' or activePage == 'car-brands' or activePage == 'users' or activePage == 'orders' or activePage == 'payments' or activePage == 'analytics' or activePage == 'team'}" class="space-y-1 px-3">
+            <li th:if="${canAccessAdminDashboard}">
+                <a href="#dashboard"
+                    class="tab-link flex items-center px-4 py-3 bg-primary/10 dark:bg-primary text-primary dark:text-[#e0e0e0] rounded-xl transition-colors font-medium dark:shadow-[0_0_15px_rgba(30,86,49,0.5)]">
+                    <svg class="h-5 w-5 mr-3 text-primary dark:text-[#e0e0e0] tab-icon" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    İdarə Paneli
+                </a>
+            </li>
+            <li th:if="${canAccessOrders}">
+                <a href="/admin/orders" th:href="@{/admin/orders}"
+                    class="flex items-center px-4 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-colors font-medium">
+                    <svg class="h-5 w-5 mr-3 text-gray-600 dark:text-gray-400" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Sifarişlər
+                </a>
+            </li>
+            <li th:if="${canAccessProducts}">
+                <a href="#products"
+                    class="tab-link flex items-center px-4 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-colors font-medium">
+                    <svg class="h-5 w-5 mr-3 text-gray-600 dark:text-gray-400 tab-icon" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    Məhsullar
+                </a>
+            </li>
+            <li th:if="${canAccessProducts}">
+                <a href="/admin/categories" th:href="@{/admin/categories}"
+                    class="flex items-center px-4 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-colors font-medium">
+                    <svg class="h-5 w-5 mr-3 text-gray-600 dark:text-gray-400" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                    Kateqoriyalar
+                </a>
+            </li>
+            <li th:if="${canAccessProducts}">
+                <a href="/admin/car-brands" th:href="@{/admin/car-brands}"
+                    class="flex items-center px-4 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-colors font-medium">
+                    <svg class="h-5 w-5 mr-3 text-gray-600 dark:text-gray-400" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M5 13l4 0m6 0l4 0m-14 4h14a2 2 0 002-2v-3a2 2 0 00-.586-1.414l-2.828-2.828A2 2 0 0016.172 7H7.828a2 2 0 00-1.414.586L3.586 10.414A2 2 0 003 11.828V15a2 2 0 002 2zm1-2a1 1 0 100-2 1 1 0 000 2zm10 0a1 1 0 100-2 1 1 0 000 2z" />
+                    </svg>
+                    Avtomobil markaları
+                </a>
+            </li>
+            <li th:if="${canAccessUsers}">
+                <a href="/admin/users" th:href="@{/admin/users}"
+                    class="flex items-center px-4 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-colors font-medium">
+                    <svg class="h-5 w-5 mr-3 text-gray-600 dark:text-gray-400" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    İstifadəçilər
+                </a>
+            </li>
+
+            <li th:if="${canAccessAnalytics}">
+                <a href="/admin/analytics" th:href="@{/admin/analytics}"
+                    title="Müştəri Hesablaşmaları"
+                    class="flex items-center px-4 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-colors font-medium">
+                    <svg class="h-5 w-5 mr-3 text-gray-600 dark:text-gray-400" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    Müştəri Hesablaşmaları
+                </a>
+            </li>
+            <li th:if="${canAccessPayments}">
+                <a href="/admin/payments" th:href="@{/admin/payments}"
+                    class="flex items-center px-4 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-colors font-medium">
+                    <svg class="h-5 w-5 mr-3 text-gray-600 dark:text-gray-400" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    Ödənişlər (Kassa)
+                </a>
+            </li>
+            <li th:if="${isSuperAdmin}">
+                <a href="/admin/team" th:href="@{/admin/team}"
+                    class="flex items-center px-4 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-colors font-medium">
+                    <svg class="h-5 w-5 mr-3 text-gray-600 dark:text-gray-400" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    Komanda və İcazələr
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <div class="p-4 border-t border-gray-200 dark:border-[#333333]">
+        <form th:action="@{/logout}" method="post" class="w-full">
+            <button type="submit"
+                class="w-full flex items-center px-4 py-3 text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-400/10 rounded-xl transition-colors font-medium text-left bg-transparent border-none cursor-pointer">
+                <svg class="h-5 w-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Sistemdən Çıxış
+            </button>
+        </form>
+    </div>
+</aside>
+</body>
+</html>

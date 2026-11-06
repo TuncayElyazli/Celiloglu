@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<html lang="az" xmlns:th="http://www.thymeleaf.org" class="h-full overflow-hidden">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cəliloğlu Admin - Komanda və İcazələr</title>
+    <meta name="description" content="Cəliloğlu Admin Panel - Daxili komanda və icazələrin idarəetməsi">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e5631',
+                        secondary: '#3b82f6',
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light-mode');
+        } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light-mode');
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="/css/style.css">
+    <script th:src="@{/js/script.js}" src="/js/script.js" defer></script>
+    <script th:src="@{/js/theme.js}" src="/js/theme.js" defer></script>
+</head>
+
+<body class="flex h-screen overflow-hidden text-gray-800 dark:text-[#e0e0e0] bg-gray-50 dark:bg-[#121212] transition-colors">
+
+    <!-- Sidebar Fragment -->
+    <aside th:replace="~{fragments/admin-sidebar :: sidebar('team')}"></aside>
+
+    <!-- Main Wrapper -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50 dark:bg-[#121212] transition-colors">
+
+        <!-- Top Header -->
+        <header class="h-20 bg-white dark:bg-[#121212] border-b border-gray-200 dark:border-[#333333] flex items-center justify-between px-8 flex-shrink-0 z-10 transition-colors duration-300 shadow-sm dark:shadow-lg">
+            <h1 class="text-xl font-bold text-gray-800 dark:text-[#e0e0e0] transition-colors duration-300">Komanda və İcazələr</h1>
+            <div class="flex items-center gap-6">
+
+                <!-- Theme Toggle -->
+                <button id="theme-toggle" type="button"
+                    class="text-gray-500 dark:text-indigo-100 hover:text-primary dark:hover:text-white flex flex-col items-center transition-all duration-300 group dark:hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] focus:outline-none">
+                    <svg id="theme-toggle-dark-icon" class="hidden h-6 w-6 group-hover:scale-110 transition-transform"
+                        fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                    </svg>
+                    <svg id="theme-toggle-light-icon" class="hidden h-6 w-6 group-hover:scale-110 transition-transform"
+                        fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                            fill-rule="evenodd" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="text-[11px] font-medium mt-1">Rejim</span>
+                </button>
+
+                <!-- Profile Block Fragment -->
+                <div th:replace="~{fragments/admin-header :: profile}"></div>
+            </div>
+        </header>
+
+        <!-- Scrollable Content -->
+        <main id="team-main-scroll" class="flex-1 overflow-y-auto p-8 min-h-0">
+            <div class="max-w-7xl mx-auto space-y-8">
+
+                <!-- Header Title -->
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Komanda və İcazələr</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Şirkətin daxili işçiləri, təyin edilmiş rollar və əməliyyat səlahiyyətləri.</p>
+                </div>
+
+                <!-- Flash Messages -->
+                <div th:if="${successMessage}"
+                     class="p-4 rounded-xl bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-300 text-sm flex items-center gap-3">
+                    <svg class="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span th:text="${successMessage}">Əməliyyat uğurla tamamlandı.</span>
+                </div>
+
+                <div th:if="${infoMessage}"
+                     class="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300 text-sm flex items-center gap-3">
+                    <svg class="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span th:text="${infoMessage}">Məlumat.</span>
+                </div>
+
+                <div th:if="${errorMessage}"
+                     class="p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 text-sm flex items-center gap-3">
+                    <svg class="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span th:text="${errorMessage}">Xəta baş verdi.</span>
+                </div>
+
+                <!-- 4 Role Cards (Active DB counts) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Super Admin -->
+                    <div id="card-SUPER_ADMIN" data-role-card="SUPER_ADMIN"
+                         class="role-card bg-white dark:bg-[#1e1e1e] p-6 rounded-2xl border border-gray-100 dark:border-[#333333] border-l-4 border-l-purple-500 shadow-sm transition-all duration-200 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h3 class="font-bold text-gray-900 dark:text-white text-lg">Super Admin</h3>
+                                    <p class="text-xs font-semibold text-purple-600 dark:text-purple-400 mt-0.5 uppercase tracking-wider">RƏHBƏRLİK</p>
+                                </div>
+                                <div class="bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 text-xs font-bold px-2.5 py-1 rounded-lg"
+                                     th:text="${summary.superAdminCount + ' İşçi'}">1 İşçi</div>
+                            </div>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+                                Bütün sistem modullarına, hesabatlara, kassa və komanda ayarlanmalarına tam, məhdudiyyətsiz giriş hüququ.
+                            </p>
+                        </div>
+                        <div class="pt-4 border-t border-gray-100 dark:border-[#2a2a2a] flex items-center justify-between">
+                            <span class="text-[11px] text-gray-400 dark:text-gray-500 font-medium">Bütün modullar</span>
+                            <button type="button"
+                                    onclick="selectRolePreview('SUPER_ADMIN')"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/50 transition-colors cursor-pointer"
+                                    title="Super Admin icazələrinə bax">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                İcazələrə bax
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Admin -->
+                    <div id="card-ADMIN" data-role-card="ADMIN"
+                         class="role-card bg-white dark:bg-[#1e1e1e] p-6 rounded-2xl border border-gray-100 dark:border-[#333333] border-l-4 border-l-[#1e5631] shadow-sm transition-all duration-200 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h3 class="font-bold text-gray-900 dark:text-white text-lg">Admin</h3>
+                                    <p class="text-xs font-semibold text-[#1e5631] dark:text-[#2ecc71] mt-0.5 uppercase tracking-wider">İDARƏETMƏ</p>
+                                </div>
+                                <div class="bg-green-100 dark:bg-[#1e5631]/20 text-[#1e5631] dark:text-[#2ecc71] text-xs font-bold px-2.5 py-1 rounded-lg"
+                                     th:text="${summary.adminCount + ' İşçi'}">0 İşçi</div>
+                            </div>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+                                Sifarişlərin, kataloq məhsullarının, kateqoriyaların və adi müştəri hesablarının idarə edilməsi səlahiyyəti.
+                            </p>
+                        </div>
+                        <div class="pt-4 border-t border-gray-100 dark:border-[#2a2a2a] flex items-center justify-between">
+                            <span class="text-[11px] text-gray-400 dark:text-gray-500 font-medium">Əməliyyat &amp; Kataloq</span>
+                            <button type="button"
+                                    onclick="selectRolePreview('ADMIN')"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#1e5631] bg-green-50 hover:bg-green-100 dark:bg-[#1e5631]/20 dark:text-[#2ecc71] dark:hover:bg-[#1e5631]/40 transition-colors cursor-pointer"
+                                    title="Admin icazələrinə bax">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                İcazələrə bax
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Anbar Müdiri -->
+                    <div id="card-WAREHOUSE_MANAGER" data-role-card="WAREHOUSE_MANAGER"
+                         class="role-card bg-white dark:bg-[#1e1e1e] p-6 rounded-2xl border border-gray-100 dark:border-[#333333] border-l-4 border-l-blue-500 shadow-sm transition-all duration-200 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h3 class="font-bold text-gray-900 dark:text-white text-lg">Anbar Müdiri</h3>
+                                    <p class="text-xs font-semibold text-blue-600 dark:text-blue-400 mt-0.5 uppercase tracking-wider">LOGİSTİKA</p>
+                                </div>
+                                <div class="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-bold px-2.5 py-1 rounded-lg"
+                                     th:text="${summary.warehouseCount + ' İşçi'}">0 İşçi</div>
+                            </div>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+                                Sifarişlərin yoxlanması, karqoya verilməsi və dar çərçivədə cari anbar stokunun yenilənməsi səlahiyyəti.
+                            </p>
+                        </div>
+                        <div class="pt-4 border-t border-gray-100 dark:border-[#2a2a2a] flex items-center justify-between">
+                            <span class="text-[11px] text-gray-400 dark:text-gray-500 font-medium">Stok &amp; Çatdırılma</span>
+                            <button type="button"
+                                    onclick="selectRolePreview('WAREHOUSE_MANAGER')"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors cursor-pointer"
+                                    title="Anbar Müdiri icazələrinə bax">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                İcazələrə bax
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Kassir -->
+                    <div id="card-CASHIER" data-role-card="CASHIER"
+                         class="role-card bg-white dark:bg-[#1e1e1e] p-6 rounded-2xl border border-gray-100 dark:border-[#333333] border-l-4 border-l-yellow-500 shadow-sm transition-all duration-200 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h3 class="font-bold text-gray-900 dark:text-white text-lg">Kassir</h3>
+                                    <p class="text-xs font-semibold text-yellow-600 dark:text-yellow-400 mt-0.5 uppercase tracking-wider">MALİYYƏ</p>
+                                </div>
+                                <div class="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 text-xs font-bold px-2.5 py-1 rounded-lg"
+                                     th:text="${summary.cashierCount + ' İşçi'}">0 İşçi</div>
+                            </div>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+                                Faktiki nağd və bank ödənişlərinin qeydiyyatı, Kassa jurnalı və Müştəri Hesablaşmaları hesabatının izlənməsi səlahiyyəti.
+                            </p>
+                        </div>
+                        <div class="pt-4 border-t border-gray-100 dark:border-[#2a2a2a] flex items-center justify-between">
+                            <span class="text-[11px] text-gray-400 dark:text-gray-500 font-medium">Ödəniş &amp; Qəbz</span>
+                            <button type="button"
+                                    onclick="selectRolePreview('CASHIER')"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 dark:bg-amber-900/30 dark:text-amber-300 dark:hover:bg-amber-900/50 transition-colors cursor-pointer"
+                                    title="Kassir icazələrinə bax">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                İcazələrə bax
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Yeni İşçi Təyin Et (Mövcud İstifadəçi Axtarışı) -->
+                <div class="bg-white dark:bg-[#1e1e1e] rounded-2xl border border-gray-100 dark:border-[#333333] shadow-sm p-6 transition-colors">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 pb-4 border-b border-gray-100 dark:border-[#333333]">
+                        <div>
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                <svg class="h-5 w-5 text-primary dark:text-[#2ecc71]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                                </svg>
+                                Mövcud Hesaba İşçi Rolu Təyin Et
+                            </h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                Mövcud aktiv istifadəçini dəqiq istifadəçi adı (username) ilə taparaq ona birbaşa daxili işçi rolu verin.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Search Form -->
+                    <form th:action="@{/admin/team}" method="get" class="flex flex-col sm:flex-row gap-3 items-center">
+                        <div class="relative flex-1 w-full">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">@</span>
+                            <input type="text" name="searchUsername" th:value="${searchedUsername}" required
+                                   placeholder="Dəqiq istifadəçi adını daxil edin (məs: tuncay, kamran)..."
+                                   class="w-full pl-8 pr-4 py-2.5 text-sm bg-gray-50 dark:bg-black/30 border border-gray-200 dark:border-[#333333] rounded-xl text-gray-900 dark:text-white focus:ring-primary focus:border-primary" />
+                        </div>
+                        <button type="submit"
+                                class="w-full sm:w-auto px-5 py-2.5 bg-primary hover:bg-opacity-90 text-white text-xs font-bold rounded-xl shadow-sm transition-all cursor-pointer whitespace-nowrap">
+                            İstifadəçini Axtar
+                        </button>
+                        <a th:if="${searchedUsername}" th:href="@{/admin/team}"
+                           class="w-full sm:w-auto px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/20 text-gray-700 dark:text-gray-300 text-xs font-semibold rounded-xl text-center transition-colors">
+                            Təmizlə
+                        </a>
+                    </form>
+
+                    <!-- Search Result Not Found -->
+                    <div th:if="${searchNotFound}" class="mt-4 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-xs">
+                        Daxil edilmiş <strong>@[[${searchedUsername}]]</strong> istifadəçi adı ilə aktiv hesab tapılmadı.
+                    </div>
+
+                    <!-- Found User Card & Role Assignment Form -->
+                    <div th:if="${foundUser != null}" class="mt-5 p-5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-[#333333]">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div>
+                                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block">Tapılan Hesab</span>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <h4 class="text-base font-bold text-gray-900 dark:text-white" th:text="${foundUser.fullName}">Ad Soyad</h4>
+                                    <span class="text-xs font-mono text-gray-500 dark:text-gray-400" th:text="'(@' + ${foundUser.username} + ')'">(@user)</span>
+                                </div>
+                                <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    <span th:text="${foundUser.email}">email@example.com</span>
+                                    <span>Cari Rol: <strong class="text-primary dark:text-[#2ecc71]" th:text="${foundUser.role != null ? (foundUser.role.displayName ?: foundUser.role.name()) : '-'}">Müştəri</strong></span>
+                                </div>
+                            </div>
+
+                            <!-- Cannot edit Super Admin -->
+                            <div th:if="${foundUser.role != null and foundUser.role.name() == 'SUPER_ADMIN'}"
+                                 class="text-xs font-bold text-purple-700 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/30 px-3 py-1.5 rounded-lg border border-purple-200 dark:border-purple-800">
+                                SUPER_ADMIN rolu dəyişdirilə bilməz
+                            </div>
+
+                            <!-- Role Change Form -->
+                            <form th:unless="${foundUser.role != null and foundUser.role.name() == 'SUPER_ADMIN'}"
+                                  th:action="@{/admin/team/{id}/role(id=${foundUser.id})}" method="post"
+                                  class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                                <!-- Custom Role Selection Dropdown Wrapper -->
+                                <div class="role-custom-select-wrapper relative w-full sm:w-72">
+                                    <!-- Native select (Source of truth & No-JS fallback) -->
+                                    <select name="newRole" required
+                                            class="role-native-select w-full text-xs font-bold bg-white dark:bg-[#121212] border border-gray-200 dark:border-[#333333] rounded-xl px-3.5 py-2.5 text-gray-900 dark:text-white focus:ring-primary focus:border-primary">
+                                        <option value="ADMIN" th:selected="${foundUser.role != null and foundUser.role.name() == 'ADMIN'}">Admin (İdarəetmə)</option>
+                                        <option value="CASHIER" th:selected="${foundUser.role != null and foundUser.role.name() == 'CASHIER'}">Kassir (Maliyyə / Kassa)</option>
+                                        <option value="WAREHOUSE_MANAGER" th:selected="${foundUser.role != null and foundUser.role.name() == 'WAREHOUSE_MANAGER'}">Anbar Müdiri (Logistika)</option>
+                                        <option value="USER" th:selected="${foundUser.role != null and foundUser.role.name() == 'USER'}">USER (Adi Müştəri - hüququ ləğv et)</option>
+                                    </select>
+
+                                    <!-- Custom Trigger Button (Hidden by default, shown by JS) -->
+                                    <button type="button"
+                                            class="role-select-trigger hidden w-full flex items-center justify-between gap-2 px-3.5 py-2.5 text-xs font-semibold rounded-xl bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#333333] text-gray-800 dark:text-[#e0e0e0] shadow-sm hover:border-gray-300 dark:hover:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-[#2ecc71] transition-all cursor-pointer"
+                                            aria-haspopup="listbox"
+                                            aria-expanded="false"
+                                            aria-label="Təyin ediləcək rolu seçin">
+                                        <span class="flex items-center gap-2 truncate">
+                                            <span class="role-select-label truncate font-semibold text-gray-900 dark:text-white">Rol seçin</span>
+                                        </span>
+                                        <!-- Rotating Chevron Icon -->
+                                        <svg class="role-select-chevron w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform duration-200 flex-shrink-0"
+                                             fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+
+                                    <!-- Custom Dropdown Panel -->
+                                    <div class="role-select-menu hidden absolute left-0 right-0 sm:left-auto sm:right-0 mt-1.5 w-full sm:w-72 bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333333] rounded-xl shadow-xl z-50 p-1.5 space-y-0.5 focus:outline-none transition-all"
+                                         role="listbox"
+                                         tabindex="-1">
+
+                                        <!-- ADMIN -->
+                                        <div class="role-select-option flex items-center justify-between px-3 py-2 text-xs rounded-lg text-gray-700 dark:text-[#e0e0e0] hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white focus:bg-gray-100 dark:focus:bg-white/10 focus:text-gray-900 dark:focus:text-white cursor-pointer transition-colors focus:outline-none"
+                                             role="option"
+                                             data-value="ADMIN"
+                                             tabindex="-1"
+                                             aria-selected="false">
+                                            <div class="flex flex-col text-left">
+                                                <span class="role-opt-title font-bold text-gray-900 dark:text-white">Admin</span>
+                                                <span class="role-opt-sub text-[11px] text-gray-500 dark:text-gray-400">İdarəetmə</span>
+                                            </div>
+                                            <svg class="role-check-icon hidden w-4 h-4 text-emerald-600 dark:text-[#2ecc71] flex-shrink-0"
+                                                 fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </div>
+
+                                        <!-- CASHIER -->
+                                        <div class="role-select-option flex items-center justify-between px-3 py-2 text-xs rounded-lg text-gray-700 dark:text-[#e0e0e0] hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white focus:bg-gray-100 dark:focus:bg-white/10 focus:text-gray-900 dark:focus:text-white cursor-pointer transition-colors focus:outline-none"
+                                             role="option"
+                                             data-value="CASHIER"
+                                             tabindex="-1"
+                                             aria-selected="false">
+                                            <div class="flex flex-col text-left">
+                                                <span class="role-opt-title font-bold text-gray-900 dark:text-white">Kassir</span>
+                                                <span class="role-opt-sub text-[11px] text-gray-500 dark:text-gray-400">Maliyyə / Kassa</span>
+                                            </div>
+                                            <svg class="role-check-icon hidden w-4 h-4 text-emerald-600 dark:text-[#2ecc71] flex-shrink-0"
+                                                 fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </div>
+
+                                        <!-- WAREHOUSE_MANAGER -->
+                                        <div class="role-select-option flex items-center justify-between px-3 py-2 text-xs rounded-lg text-gray-700 dark:text-[#e0e0e0] hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white focus:bg-gray-100 dark:focus:bg-white/10 focus:text-gray-900 dark:focus:text-white cursor-pointer transition-colors focus:outline-none"
+                                             role="option"
+                                             data-value="WAREHOUSE_MANAGER"
+                                             tabindex="-1"
+                                             aria-selected="false">
+                                            <div class="flex flex-col text-left">
+                                                <span class="role-opt-title font-bold text-gray-900 dark:text-white">Anbar Müdiri</span>
+                                                <span class="role-opt-sub text-[11px] text-gray-500 dark:text-gray-400">Logistika</span>
+                                            </div>
+                                            <svg class="role-check-icon hidden w-4 h-4 text-emerald-600 dark:text-[#2ecc71] flex-shrink-0"
+                                                 fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </div>
+
+                                        <!-- USER -->
+                                        <div class="role-select-option flex items-center justify-between px-3 py-2 text-xs rounded-lg text-gray-700 dark:text-[#e0e0e0] hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white focus:bg-gray-100 dark:focus:bg-white/10 focus:text-gray-900 dark:focus:text-white cursor-pointer transition-colors focus:outline-none"
+                                             role="option"
+                                             data-value="USER"
+                                             tabindex="-1"
+                                             aria-selected="false">
+                                            <div class="flex flex-col text-left">
+                                                <span class="role-opt-title font-bold text-gray-900 dark:text-white">USER</span>
+                                                <span class="role-opt-sub text-[11px] text-gray-500 dark:text-gray-400">Adi Müştəri - hüququ ləğv et</span>
+                                            </div>
+                                            <svg class="role-check-icon hidden w-4 h-4 text-emerald-600 dark:text-[#2ecc71] flex-shrink-0"
+                                                 fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button type="submit"
+                                        class="px-4 py-2.5 bg-primary hover:bg-opacity-90 text-white text-xs font-bold rounded-xl shadow-sm transition-all cursor-pointer whitespace-nowrap">
+                                    Rolu Təyin Et
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daxili İşçilər Siyahısı (Staff Table) -->
+                <div class="bg-white dark:bg-[#1e1e1e] rounded-2xl border border-gray-100 dark:border-[#333333] shadow-sm transition-colors">
+                    <div class="px-6 py-4 border-b border-gray-100 dark:border-[#333333] flex items-center justify-between">
+                        <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <svg class="h-5 w-5 text-primary dark:text-[#2ecc71]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            Daxili İşçilər Siyahısı
+                        </h3>
+                        <span class="text-xs text-gray-500 dark:text-gray-400"
+                              th:text="|Cəmi: ${#lists.size(summary.members)} işçi|">Cəmi: 0 işçi</span>
+                    </div>
+
+                    <div class="overflow-x-auto min-h-[250px] pb-6">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead>
+                                <tr class="bg-gray-50/80 dark:bg-white/5 border-b border-gray-100 dark:border-[#333333] text-xs font-semibold text-gray-500 dark:text-[#e0e0e0] uppercase tracking-wider transition-colors">
+                                    <th scope="col" class="px-6 py-4">İşçi Adı / İstifadəçi Adı</th>
+                                    <th scope="col" class="px-6 py-4">E-poçt</th>
+                                    <th scope="col" class="px-6 py-4 text-center">Rol</th>
+                                    <th scope="col" class="px-6 py-4 text-center">Aktivlik</th>
+                                    <th scope="col" class="px-6 py-4 text-right">Rolu Dəyiş</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-[#333333]">
+                                <tr th:each="member : ${summary.members}" class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                    <!-- Ad və Username -->
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center gap-3">
+                                            <div class="h-9 w-9 rounded-full bg-primary/10 dark:bg-white/5 text-primary dark:text-[#2ecc71] flex items-center justify-center font-bold text-xs">
+                                                <span th:text="${#strings.substring(member.fullName, 0, 1)}">U</span>
+                                            </div>
+                                            <div>
+                                                <p class="font-bold text-gray-900 dark:text-white" th:text="${member.fullName}">İstifadəçi Adı</p>
+                                                <p class="font-mono text-xs text-gray-400 dark:text-gray-500" th:text="'@' + ${member.username}">@user</p>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <!-- Email -->
+                                    <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-600 dark:text-gray-400"
+                                        th:text="${member.email}">email@celiloglu.az</td>
+
+                                    <!-- Rol -->
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        <span th:if="${member.role != null and member.role.name() == 'SUPER_ADMIN'}"
+                                              class="bg-purple-100 text-purple-800 text-xs font-bold px-3 py-1 rounded-full border border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800 uppercase tracking-wider">
+                                            Super Admin
+                                        </span>
+                                        <span th:if="${member.role != null and member.role.name() == 'ADMIN'}"
+                                              class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 uppercase tracking-wider">
+                                            Admin
+                                        </span>
+                                        <span th:if="${member.role != null and member.role.name() == 'WAREHOUSE_MANAGER'}"
+                                              class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full border border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800 uppercase tracking-wider">
+                                            Anbar Müdiri
+                                        </span>
+                                        <span th:if="${member.role != null and member.role.name() == 'CASHIER'}"
+                                              class="bg-yellow-100 text-yellow-800 text-xs font-bold px-3 py-1 rounded-full border border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800 uppercase tracking-wider">
+                                            Kassir
+                                        </span>
+                                    </td>
+
+                                    <!-- Aktivlik -->
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        <span th:if="${member.isActive}"
+                                              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
+                                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Aktiv
+                                        </span>
+                                        <span th:unless="${member.isActive}"
+                                              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                                            <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span> Deaktiv
+                                        </span>
+                                    </td>
+
+                                    <!-- Əməliyyat -->
+                                    <td class="px-6 py-4 whitespace-nowrap text-right">
+                                        <!-- Super Admin sabitdir -->
+                                        <span th:if="${member.role != null and member.role.name() == 'SUPER_ADMIN'}"
+                                              class="text-xs font-medium text-gray-400 dark:text-gray-500 italic">
+                                            Dəyişdirilə bilməz
+                                        </span>
+
+                                        <!-- Digər işçilər üçün rol dəyişmə forması -->
+                                        <form th:unless="${member.role != null and member.role.name() == 'SUPER_ADMIN'}"
+                                              th:action="@{/admin/team/{id}/role(id=${member.id})}" method="post"
+                                              class="inline-flex items-center gap-2">
+                                            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                                            <!-- Custom Role Selection Dropdown Wrapper for Table Row -->
+                                            <div class="role-custom-select-wrapper relative inline-block text-left w-44 sm:w-52">
+                                                <!-- Native select (Source of truth & No-JS fallback) -->
+                                                <select name="newRole" required
+                                                        class="role-native-select w-full text-xs font-semibold bg-white dark:bg-[#121212] border border-gray-200 dark:border-[#333333] rounded-xl px-3 py-1.5 text-gray-900 dark:text-white focus:ring-primary focus:border-primary">
+                                                    <option value="ADMIN" th:selected="${member.role != null and member.role.name() == 'ADMIN'}">Admin (İdarəetmə)</option>
+                                                    <option value="CASHIER" th:selected="${member.role != null and member.role.name() == 'CASHIER'}">Kassir (Maliyyə / Kassa)</option>
+                                                    <option value="WAREHOUSE_MANAGER" th:selected="${member.role != null and member.role.name() == 'WAREHOUSE_MANAGER'}">Anbar Müdiri (Logistika)</option>
+                                                    <option value="USER" th:selected="${member.role != null and member.role.name() == 'USER'}">USER (Hüququ ləğv et)</option>
+                                                </select>
+
+                                                <!-- Custom Trigger Button (Hidden by default, shown by JS) -->
+                                                <button type="button"
+                                                        class="role-select-trigger hidden w-full flex items-center justify-between gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#333333] text-gray-800 dark:text-[#e0e0e0] shadow-sm hover:border-gray-300 dark:hover:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-[#2ecc71] transition-all cursor-pointer"
+                                                        aria-haspopup="listbox"
+                                                        aria-expanded="false"
+                                                        aria-label="İşçi üçün rol seçin">
+                                                    <span class="role-select-label truncate font-semibold text-gray-900 dark:text-white">Rol seçin</span>
+                                                    <svg class="role-select-chevron w-3.5 h-3.5 text-gray-400 dark:text-gray-500 transition-transform duration-200 flex-shrink-0"
+                                                         fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                </button>
+
+                                                <!-- Custom Dropdown Panel -->
+                                                <div class="role-select-menu hidden absolute right-0 mt-1.5 w-56 sm:w-60 bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333333] rounded-xl shadow-xl z-50 p-1.5 space-y-0.5 focus:outline-none transition-all"
+                                                     role="listbox"
+                                                     tabindex="-1">
+                                                    <!-- ADMIN -->
+                                                    <div class="role-select-option flex items-center justify-between px-3 py-2 text-xs rounded-lg text-gray-700 dark:text-[#e0e0e0] hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white focus:bg-gray-100 dark:focus:bg-white/10 focus:text-gray-900 dark:focus:text-white cursor-pointer transition-colors focus:outline-none"
+                                                         role="option" data-value="ADMIN" tabindex="-1" aria-selected="false">
+                                                        <div class="flex flex-col text-left">
+                                                            <span class="role-opt-title font-bold text-gray-900 dark:text-white">Admin</span>
+                                                            <span class="role-opt-sub text-[11px] text-gray-500 dark:text-gray-400">İdarəetmə</span>
+                                                        </div>
+                                                        <svg class="role-check-icon hidden w-4 h-4 text-emerald-600 dark:text-[#2ecc71] flex-shrink-0"
+                                                             fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                    </div>
+                                                    <!-- CASHIER -->
+                                                    <div class="role-select-option flex items-center justify-between px-3 py-2 text-xs rounded-lg text-gray-700 dark:text-[#e0e0e0] hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white focus:bg-gray-100 dark:focus:bg-white/10 focus:text-gray-900 dark:focus:text-white cursor-pointer transition-colors focus:outline-none"
+                                                         role="option" data-value="CASHIER" tabindex="-1" aria-selected="false">
+                                                        <div class="flex flex-col text-left">
+                                                            <span class="role-opt-title font-bold text-gray-900 dark:text-white">Kassir</span>
+                                                            <span class="role-opt-sub text-[11px] text-gray-500 dark:text-gray-400">Maliyyə / Kassa</span>
+                                                        </div>
+                                                        <svg class="role-check-icon hidden w-4 h-4 text-emerald-600 dark:text-[#2ecc71] flex-shrink-0"
+                                                             fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                    </div>
+                                                    <!-- WAREHOUSE_MANAGER -->
+                                                    <div class="role-select-option flex items-center justify-between px-3 py-2 text-xs rounded-lg text-gray-700 dark:text-[#e0e0e0] hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white focus:bg-gray-100 dark:focus:bg-white/10 focus:text-gray-900 dark:focus:text-white cursor-pointer transition-colors focus:outline-none"
+                                                         role="option" data-value="WAREHOUSE_MANAGER" tabindex="-1" aria-selected="false">
+                                                        <div class="flex flex-col text-left">
+                                                            <span class="role-opt-title font-bold text-gray-900 dark:text-white">Anbar Müdiri</span>
+                                                            <span class="role-opt-sub text-[11px] text-gray-500 dark:text-gray-400">Logistika</span>
+                                                        </div>
+                                                        <svg class="role-check-icon hidden w-4 h-4 text-emerald-600 dark:text-[#2ecc71] flex-shrink-0"
+                                                             fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                    </div>
+                                                    <!-- USER -->
+                                                    <div class="role-select-option flex items-center justify-between px-3 py-2 text-xs rounded-lg text-gray-700 dark:text-[#e0e0e0] hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white focus:bg-gray-100 dark:focus:bg-white/10 focus:text-gray-900 dark:focus:text-white cursor-pointer transition-colors focus:outline-none"
+                                                         role="option" data-value="USER" tabindex="-1" aria-selected="false">
+                                                        <div class="flex flex-col text-left">
+                                                            <span class="role-opt-title font-bold text-gray-900 dark:text-white">USER</span>
+                                                            <span class="role-opt-sub text-[11px] text-gray-500 dark:text-gray-400">Hüququ ləğv et</span>
+                                                        </div>
+                                                        <svg class="role-check-icon hidden w-4 h-4 text-emerald-600 dark:text-[#2ecc71] flex-shrink-0"
+                                                             fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <button type="submit"
+                                                    class="px-3 py-1.5 text-xs font-bold bg-primary hover:bg-opacity-90 text-white rounded-xl shadow-sm transition-all cursor-pointer whitespace-nowrap"
+                                                    title="Rolu yadda saxla">
+                                                Yenilə
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <tr th:if="${summary.members == null or summary.members.isEmpty()}">
+                                    <td colspan="5" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                                        Heç bir daxili işçi tapılmadı.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Ətraflı İcazələr Matriksi (Backend Qaydalarını Əks Etdirən Real Cədvəl) -->
+                <div id="permissions-matrix" class="bg-white dark:bg-[#1e1e1e] rounded-2xl border border-gray-100 dark:border-[#333333] shadow-sm overflow-hidden transition-all scroll-mt-6">
+                    <div class="p-6 border-b border-gray-100 dark:border-[#333333] bg-gray-50/50 dark:bg-[#1a1a1a]">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-primary dark:text-[#2ecc71]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                    </svg>
+                                    <span>Daxili İcazələr Matriksi (RBAC Xülasəsi)</span>
+                                </h3>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Backend təhlükəsizlik qaydalarının (Spring Security &amp; Services) dəqiq əməliyyatlar üzrə bölgüsü.</p>
+                            </div>
+
+                            <!-- Rol filter düymələri -->
+                            <div class="flex flex-wrap items-center gap-1.5 p-1 bg-gray-100 dark:bg-black/30 rounded-xl border border-gray-200/60 dark:border-[#333333]">
+                                <button type="button" id="filter-btn-ALL" onclick="selectRolePreview('ALL')"
+                                        class="perm-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm bg-gray-900 text-white dark:bg-white dark:text-gray-900 cursor-pointer">
+                                    Bütün rollar
+                                </button>
+                                <button type="button" id="filter-btn-SUPER_ADMIN" onclick="selectRolePreview('SUPER_ADMIN')"
+                                        class="perm-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white cursor-pointer">
+                                    Super Admin
+                                </button>
+                                <button type="button" id="filter-btn-ADMIN" onclick="selectRolePreview('ADMIN')"
+                                        class="perm-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white cursor-pointer">
+                                    Admin
+                                </button>
+                                <button type="button" id="filter-btn-WAREHOUSE_MANAGER" onclick="selectRolePreview('WAREHOUSE_MANAGER')"
+                                        class="perm-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white cursor-pointer">
+                                    Anbar Müdiri
+                                </button>
+                                <button type="button" id="filter-btn-CASHIER" onclick="selectRolePreview('CASHIER')"
+                                        class="perm-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white cursor-pointer">
+                                    Kassir
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Seçilmiş Rol Bildiriş Zolağı (Önizləmə aktiv olanda görünür) -->
+                        <div id="preview-role-banner" class="hidden mt-4 pt-4 border-t border-gray-200/60 dark:border-[#2a2a2a] flex items-center justify-between flex-wrap gap-2">
+                            <div class="flex items-center gap-2">
+                                <span class="h-2 w-2 rounded-full bg-primary dark:bg-[#2ecc71] animate-pulse"></span>
+                                <span class="text-xs text-gray-600 dark:text-gray-300">
+                                    Önizləmə aktivdir: Hazırda yalnız <strong id="preview-role-name" class="font-bold text-gray-900 dark:text-white"></strong> rolunun icazələri göstərilir.
+                                </span>
+                            </div>
+                            <button type="button" onclick="selectRolePreview('ALL')"
+                                    class="inline-flex items-center gap-1 text-xs font-semibold text-primary dark:text-[#2ecc71] hover:underline cursor-pointer">
+                                <span>Bütün rollar müqayisəsinə qayıt &rarr;</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                            <thead>
+                                <tr class="bg-gray-50/70 dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-[#333333] text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    <th class="px-6 py-4">Sistem Modulu / Əməliyyat</th>
+                                    <th data-role-col="SUPER_ADMIN" class="px-6 py-4 text-center">Super Admin</th>
+                                    <th data-role-col="ADMIN" class="px-6 py-4 text-center">Admin</th>
+                                    <th data-role-col="WAREHOUSE_MANAGER" class="px-6 py-4 text-center">Anbar Müdiri</th>
+                                    <th data-role-col="CASHIER" class="px-6 py-4 text-center">Kassir</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-[#2a2a2a]">
+                                <!-- 1. İdarə Paneli (Dashboard) -->
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <p class="font-bold text-gray-900 dark:text-white">İdarə Paneli (Dashboard)</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Ümumi analitika kartları, ödəniş dinamikası qrafiki və son sifarişlər</p>
+                                    </td>
+                                    <!-- Super Admin -->
+                                    <td data-role-col="SUPER_ADMIN" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Tam baxış"
+                                              aria-label="İcazə var: Tam baxış">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Tam baxış</span>
+                                        </span>
+                                    </td>
+                                    <!-- Admin -->
+                                    <td data-role-col="ADMIN" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Tam baxış"
+                                              aria-label="İcazə var: Tam baxış">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Tam baxış</span>
+                                        </span>
+                                    </td>
+                                    <!-- Anbar Müdiri -->
+                                    <td data-role-col="WAREHOUSE_MANAGER" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400 border border-red-200 dark:border-red-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-red-500 focus:outline-none cursor-help"
+                                              title="İcazə yoxdur: Giriş qadağandır (403)"
+                                              aria-label="İcazə yoxdur: Giriş qadağandır (403)">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            <span class="sr-only">İcazə yoxdur: Giriş qadağandır (403)</span>
+                                        </span>
+                                    </td>
+                                    <!-- Kassir -->
+                                    <td data-role-col="CASHIER" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400 border border-red-200 dark:border-red-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-red-500 focus:outline-none cursor-help"
+                                              title="İcazə yoxdur: Giriş qadağandır (403)"
+                                              aria-label="İcazə yoxdur: Giriş qadağandır (403)">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            <span class="sr-only">İcazə yoxdur: Giriş qadağandır (403)</span>
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <!-- 2. Sifariş detalları və icmalı -->
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <p class="font-bold text-gray-900 dark:text-white">Sifariş Detalları və İcmalı</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Sifarişlərin açılması, məhsul tərkibi və çatdırılma məlumatları</p>
+                                    </td>
+                                    <!-- Super Admin -->
+                                    <td data-role-col="SUPER_ADMIN" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Tam məlumatlar"
+                                              aria-label="İcazə var: Tam məlumatlar">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Tam məlumatlar</span>
+                                        </span>
+                                    </td>
+                                    <!-- Admin -->
+                                    <td data-role-col="ADMIN" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Tam məlumatlar"
+                                              aria-label="İcazə var: Tam məlumatlar">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Tam məlumatlar</span>
+                                        </span>
+                                    </td>
+                                    <!-- Anbar Müdiri -->
+                                    <td data-role-col="WAREHOUSE_MANAGER" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Yalnız kod, say, ünvan (qiymətlər gizli)"
+                                              aria-label="İcazə var: Yalnız kod, say, ünvan (qiymətlər gizli)">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Yalnız kod, say, ünvan (qiymətlər gizli)</span>
+                                        </span>
+                                    </td>
+                                    <!-- Kassir -->
+                                    <td data-role-col="CASHIER" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Sifariş cəmi və ödəniş balansı"
+                                              aria-label="İcazə var: Sifariş cəmi və ödəniş balansı">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Sifariş cəmi və ödəniş balansı</span>
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <!-- 3. Sifarişi təsdiqləmək -->
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <p class="font-bold text-gray-900 dark:text-white">Sifarişi Təsdiqləmək</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Status keçidi: <span class="font-mono font-semibold text-gray-700 dark:text-gray-300">GÖZLƏYİR &rarr; HAZIRLANIR</span></p>
+                                    </td>
+                                    <!-- Super Admin -->
+                                    <td data-role-col="SUPER_ADMIN" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Statusu icraya yönəlt"
+                                              aria-label="İcazə var: Statusu icraya yönəlt">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Statusu icraya yönəlt</span>
+                                        </span>
+                                    </td>
+                                    <!-- Admin -->
+                                    <td data-role-col="ADMIN" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Statusu icraya yönəlt"
+                                              aria-label="İcazə var: Statusu icraya yönəlt">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Statusu icraya yönəlt</span>
+                                        </span>
+                                    </td>
+                                    <!-- Anbar Müdiri -->
+                                    <td data-role-col="WAREHOUSE_MANAGER" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400 border border-red-200 dark:border-red-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-red-500 focus:outline-none cursor-help"
+                                              title="İcazə yoxdur: Yalnız hazır bağlamaları qəbul edir"
+                                              aria-label="İcazə yoxdur: Yalnız hazır bağlamaları qəbul edir">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            <span class="sr-only">İcazə yoxdur: Yalnız hazır bağlamaları qəbul edir</span>
+                                        </span>
+                                    </td>
+                                    <!-- Kassir -->
+                                    <td data-role-col="CASHIER" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400 border border-red-200 dark:border-red-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-red-500 focus:outline-none cursor-help"
+                                              title="İcazə yoxdur: Status hüququ yoxdur"
+                                              aria-label="İcazə yoxdur: Status hüququ yoxdur">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            <span class="sr-only">İcazə yoxdur: Status hüququ yoxdur</span>
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <!-- 4. Karqoya vermək -->
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <p class="font-bold text-gray-900 dark:text-white">Karqoya Vermək</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Status keçidi: <span class="font-mono font-semibold text-gray-700 dark:text-gray-300">HAZIRLANIR &rarr; KARQOYA_VERİLDİ</span></p>
+                                    </td>
+                                    <!-- Super Admin -->
+                                    <td data-role-col="SUPER_ADMIN" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Tam icazə"
+                                              aria-label="İcazə var: Tam icazə">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Tam icazə</span>
+                                        </span>
+                                    </td>
+                                    <!-- Admin -->
+                                    <td data-role-col="ADMIN" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Tam icazə"
+                                              aria-label="İcazə var: Tam icazə">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Tam icazə</span>
+                                        </span>
+                                    </td>
+                                    <!-- Anbar Müdiri -->
+                                    <td data-role-col="WAREHOUSE_MANAGER" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Fiziki təhvil və göndəriş"
+                                              aria-label="İcazə var: Fiziki təhvil və göndəriş">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Fiziki təhvil və göndəriş</span>
+                                        </span>
+                                    </td>
+                                    <!-- Kassir -->
+                                    <td data-role-col="CASHIER" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400 border border-red-200 dark:border-red-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-red-500 focus:outline-none cursor-help"
+                                              title="İcazə yoxdur: Status hüququ yoxdur"
+                                              aria-label="İcazə yoxdur: Status hüququ yoxdur">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            <span class="sr-only">İcazə yoxdur: Status hüququ yoxdur</span>
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <!-- 5. Çatdırıldı kimi qeyd etmək -->
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <p class="font-bold text-gray-900 dark:text-white">Çatdırıldı Kimi Qeyd Etmək</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Status keçidi: <span class="font-mono font-semibold text-gray-700 dark:text-gray-300">KARQOYA_VERİLDİ &rarr; ÇATDIRILDI</span></p>
+                                    </td>
+                                    <!-- Super Admin -->
+                                    <td data-role-col="SUPER_ADMIN" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Yekun sifariş təhvili"
+                                              aria-label="İcazə var: Yekun sifariş təhvili">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Yekun sifariş təhvili</span>
+                                        </span>
+                                    </td>
+                                    <!-- Admin -->
+                                    <td data-role-col="ADMIN" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Yekun sifariş təhvili"
+                                              aria-label="İcazə var: Yekun sifariş təhvili">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Yekun sifariş təhvili</span>
+                                        </span>
+                                    </td>
+                                    <!-- Anbar Müdiri -->
+                                    <td data-role-col="WAREHOUSE_MANAGER" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400 border border-red-200 dark:border-red-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-red-500 focus:outline-none cursor-help"
+                                              title="İcazə yoxdur: Yalnız admin və ya kuryer tərəfindən bağlanır"
+                                              aria-label="İcazə yoxdur: Yalnız admin və ya kuryer tərəfindən bağlanır">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            <span class="sr-only">İcazə yoxdur: Yalnız admin və ya kuryer tərəfindən bağlanır</span>
+                                        </span>
+                                    </td>
+                                    <!-- Kassir -->
+                                    <td data-role-col="CASHIER" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400 border border-red-200 dark:border-red-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-red-500 focus:outline-none cursor-help"
+                                              title="İcazə yoxdur: Status hüququ yoxdur"
+                                              aria-label="İcazə yoxdur: Status hüququ yoxdur">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            <span class="sr-only">İcazə yoxdur: Status hüququ yoxdur</span>
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <!-- 6. Sifarişi ləğv etmək -->
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <p class="font-bold text-gray-900 dark:text-white">Sifarişi Ləğv Etmək</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Status keçidi: <span class="font-mono font-semibold text-gray-700 dark:text-gray-300">&rarr; LƏĞV_EDİLDİ</span> (stokun avtomatik bərpası ilə)</p>
+                                    </td>
+                                    <!-- Super Admin -->
+                                    <td data-role-col="SUPER_ADMIN" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Ləğv və stok bərpası"
+                                              aria-label="İcazə var: Ləğv və stok bərpası">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Ləğv və stok bərpası</span>
+                                        </span>
+                                    </td>
+                                    <!-- Admin -->
+                                    <td data-role-col="ADMIN" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Ləğv və stok bərpası"
+                                              aria-label="İcazə var: Ləğv və stok bərpası">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Ləğv və stok bərpası</span>
+                                        </span>
+                                    </td>
+                                    <!-- Anbar Müdiri -->
+                                    <td data-role-col="WAREHOUSE_MANAGER" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400 border border-red-200 dark:border-red-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-red-500 focus:outline-none cursor-help"
+                                              title="İcazə yoxdur: Ləğvetmə səlahiyyəti yoxdur"
+                                              aria-label="İcazə yoxdur: Ləğvetmə səlahiyyəti yoxdur">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            <span class="sr-only">İcazə yoxdur: Ləğvetmə səlahiyyəti yoxdur</span>
+                                        </span>
+                                    </td>
+                                    <!-- Kassir -->
+                                    <td data-role-col="CASHIER" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400 border border-red-200 dark:border-red-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-red-500 focus:outline-none cursor-help"
+                                              title="İcazə yoxdur: Ləğvetmə səlahiyyəti yoxdur"
+                                              aria-label="İcazə yoxdur: Ləğvetmə səlahiyyəti yoxdur">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            <span class="sr-only">İcazə yoxdur: Ləğvetmə səlahiyyəti yoxdur</span>
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <!-- 7. Ödəniş qeydiyyatı -->
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <p class="font-bold text-gray-900 dark:text-white">Ödəniş Qeydiyyatı</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Faktiki nağd və ya bank köçürməsi ödənişlərinin qəbzləşdirilməsi</p>
+                                    </td>
+                                    <!-- Super Admin -->
+                                    <td data-role-col="SUPER_ADMIN" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Tam kassa idarəsi"
+                                              aria-label="İcazə var: Tam kassa idarəsi">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Tam kassa idarəsi</span>
+                                        </span>
+                                    </td>
+                                    <!-- Admin -->
+                                    <td data-role-col="ADMIN" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Tam kassa idarəsi"
+                                              aria-label="İcazə var: Tam kassa idarəsi">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Tam kassa idarəsi</span>
+                                        </span>
+                                    </td>
+                                    <!-- Anbar Müdiri -->
+                                    <td data-role-col="WAREHOUSE_MANAGER" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400 border border-red-200 dark:border-red-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-red-500 focus:outline-none cursor-help"
+                                              title="İcazə yoxdur: Maliyyə menyusu qapalıdır"
+                                              aria-label="İcazə yoxdur: Maliyyə menyusu qapalıdır">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            <span class="sr-only">İcazə yoxdur: Maliyyə menyusu qapalıdır</span>
+                                        </span>
+                                    </td>
+                                    <!-- Kassir -->
+                                    <td data-role-col="CASHIER" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Nağd və bank qəbzləri"
+                                              aria-label="İcazə var: Nağd və bank qəbzləri">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Nağd və bank qəbzləri</span>
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <!-- 8. Müştəri Hesablaşmaları -->
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <p class="font-bold text-gray-900 dark:text-white">Müştəri Hesablaşmaları</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Müştərilər üzrə sifarişlər, ödənişlər və qalıq borclar (/admin/analytics)</p>
+                                    </td>
+                                    <!-- Super Admin -->
+                                    <td data-role-col="SUPER_ADMIN" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Tam maliyyə balansı"
+                                              aria-label="İcazə var: Tam maliyyə balansı">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Tam maliyyə balansı</span>
+                                        </span>
+                                    </td>
+                                    <!-- Admin -->
+                                    <td data-role-col="ADMIN" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Müştəri borc balansı"
+                                              aria-label="İcazə var: Müştəri borc balansı">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Müştəri borc balansı</span>
+                                        </span>
+                                    </td>
+                                    <!-- Anbar Müdiri -->
+                                    <td data-role-col="WAREHOUSE_MANAGER" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400 border border-red-200 dark:border-red-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-red-500 focus:outline-none cursor-help"
+                                              title="İcazə yoxdur: Giriş qadağandır (403)"
+                                              aria-label="İcazə yoxdur: Giriş qadağandır (403)">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            <span class="sr-only">İcazə yoxdur: Giriş qadağandır (403)</span>
+                                        </span>
+                                    </td>
+                                    <!-- Kassir -->
+                                    <td data-role-col="CASHIER" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Borc hesabatı və statistika"
+                                              aria-label="İcazə var: Borc hesabatı və statistika">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Borc hesabatı və statistika</span>
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <!-- 9. Anbar stokunu dəyişmək -->
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <p class="font-bold text-gray-900 dark:text-white">Anbar Stokunu Dəyişmək</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Fiziki sayım düzəlişi: <span class="font-mono text-gray-700 dark:text-gray-300">POST /admin/products/{id}/stock</span> (pessimistic lock ilə)</p>
+                                    </td>
+                                    <!-- Super Admin -->
+                                    <td data-role-col="SUPER_ADMIN" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Lock ilə stok düzəlişi"
+                                              aria-label="İcazə var: Lock ilə stok düzəlişi">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Lock ilə stok düzəlişi</span>
+                                        </span>
+                                    </td>
+                                    <!-- Admin -->
+                                    <td data-role-col="ADMIN" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Lock ilə stok düzəlişi"
+                                              aria-label="İcazə var: Lock ilə stok düzəlişi">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Lock ilə stok düzəlişi</span>
+                                        </span>
+                                    </td>
+                                    <!-- Anbar Müdiri -->
+                                    <td data-role-col="WAREHOUSE_MANAGER" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Yalnız say düzəlişi (qiymət toxunulmaz)"
+                                              aria-label="İcazə var: Yalnız say düzəlişi (qiymət toxunulmaz)">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Yalnız say düzəlişi (qiymət toxunulmaz)</span>
+                                        </span>
+                                    </td>
+                                    <!-- Kassir -->
+                                    <td data-role-col="CASHIER" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400 border border-red-200 dark:border-red-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-red-500 focus:outline-none cursor-help"
+                                              title="İcazə yoxdur: Stok hüququ yoxdur"
+                                              aria-label="İcazə yoxdur: Stok hüququ yoxdur">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            <span class="sr-only">İcazə yoxdur: Stok hüququ yoxdur</span>
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <!-- 10. Məhsulun qiymətini və detallarını dəyişmək -->
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <p class="font-bold text-gray-900 dark:text-white">Məhsulun Qiymətini və Detallarını Dəyişmək</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Satış qiyməti, ad, kateqoriya, təsvir və şəkillərin redaktəsi</p>
+                                    </td>
+                                    <!-- Super Admin -->
+                                    <td data-role-col="SUPER_ADMIN" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Tam kataloq redaktəsi"
+                                              aria-label="İcazə var: Tam kataloq redaktəsi">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Tam kataloq redaktəsi</span>
+                                        </span>
+                                    </td>
+                                    <!-- Admin -->
+                                    <td data-role-col="ADMIN" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Tam kataloq redaktəsi"
+                                              aria-label="İcazə var: Tam kataloq redaktəsi">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Tam kataloq redaktəsi</span>
+                                        </span>
+                                    </td>
+                                    <!-- Anbar Müdiri -->
+                                    <td data-role-col="WAREHOUSE_MANAGER" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400 border border-red-200 dark:border-red-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-red-500 focus:outline-none cursor-help"
+                                              title="İcazə yoxdur: Qiymət dəyişdirilə bilməz"
+                                              aria-label="İcazə yoxdur: Qiymət dəyişdirilə bilməz">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            <span class="sr-only">İcazə yoxdur: Qiymət dəyişdirilə bilməz</span>
+                                        </span>
+                                    </td>
+                                    <!-- Kassir -->
+                                    <td data-role-col="CASHIER" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400 border border-red-200 dark:border-red-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-red-500 focus:outline-none cursor-help"
+                                              title="İcazə yoxdur: Kataloq redaktəsi qapalıdır"
+                                              aria-label="İcazə yoxdur: Kataloq redaktəsi qapalıdır">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            <span class="sr-only">İcazə yoxdur: Kataloq redaktəsi qapalıdır</span>
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <!-- 11. Müştəri hesablarının idarəsi -->
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <p class="font-bold text-gray-900 dark:text-white">Müştəri Hesablarının İdarəsi</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Müştərilərin siyahısı, profil redaktəsi və statusunun dəyişdirilməsi (/admin/users)</p>
+                                    </td>
+                                    <!-- Super Admin -->
+                                    <td data-role-col="SUPER_ADMIN" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Bütün hesablar"
+                                              aria-label="İcazə var: Bütün hesablar">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Bütün hesablar</span>
+                                        </span>
+                                    </td>
+                                    <!-- Admin -->
+                                    <td data-role-col="ADMIN" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Yalnız adi USER hesabları"
+                                              aria-label="İcazə var: Yalnız adi USER hesabları">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Yalnız adi USER hesabları</span>
+                                        </span>
+                                    </td>
+                                    <!-- Anbar Müdiri -->
+                                    <td data-role-col="WAREHOUSE_MANAGER" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400 border border-red-200 dark:border-red-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-red-500 focus:outline-none cursor-help"
+                                              title="İcazə yoxdur: Giriş qadağandır (403)"
+                                              aria-label="İcazə yoxdur: Giriş qadağandır (403)">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            <span class="sr-only">İcazə yoxdur: Giriş qadağandır (403)</span>
+                                        </span>
+                                    </td>
+                                    <!-- Kassir -->
+                                    <td data-role-col="CASHIER" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400 border border-red-200 dark:border-red-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-red-500 focus:outline-none cursor-help"
+                                              title="İcazə yoxdur: Giriş qadağandır (403)"
+                                              aria-label="İcazə yoxdur: Giriş qadağandır (403)">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            <span class="sr-only">İcazə yoxdur: Giriş qadağandır (403)</span>
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <!-- 12. Komanda və İcazələr (RBAC) -->
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <p class="font-bold text-gray-900 dark:text-white">Komanda və İcazələr (RBAC)</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Daxili işçilərə rol təyini, hüquqların ləğvi və sessiyaların bağlanması (/admin/team)</p>
+                                    </td>
+                                    <!-- Super Admin -->
+                                    <td data-role-col="SUPER_ADMIN" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-help"
+                                              title="İcazə var: Yeganə səlahiyyət sahibi"
+                                              aria-label="İcazə var: Yeganə səlahiyyət sahibi">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="sr-only">İcazə var: Yeganə səlahiyyət sahibi</span>
+                                        </span>
+                                    </td>
+                                    <!-- Admin -->
+                                    <td data-role-col="ADMIN" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400 border border-red-200 dark:border-red-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-red-500 focus:outline-none cursor-help"
+                                              title="İcazə yoxdur: Giriş qadağandır (403)"
+                                              aria-label="İcazə yoxdur: Giriş qadağandır (403)">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            <span class="sr-only">İcazə yoxdur: Giriş qadağandır (403)</span>
+                                        </span>
+                                    </td>
+                                    <!-- Anbar Müdiri -->
+                                    <td data-role-col="WAREHOUSE_MANAGER" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400 border border-red-200 dark:border-red-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-red-500 focus:outline-none cursor-help"
+                                              title="İcazə yoxdur: Giriş qadağandır (403)"
+                                              aria-label="İcazə yoxdur: Giriş qadağandır (403)">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            <span class="sr-only">İcazə yoxdur: Giriş qadağandır (403)</span>
+                                        </span>
+                                    </td>
+                                    <!-- Kassir -->
+                                    <td data-role-col="CASHIER" class="px-6 py-3.5 text-center align-middle">
+                                        <span tabindex="0"
+                                              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400 border border-red-200 dark:border-red-800/60 transition-transform hover:scale-110 focus:scale-110 focus:ring-2 focus:ring-red-500 focus:outline-none cursor-help"
+                                              title="İcazə yoxdur: Giriş qadağandır (403)"
+                                              aria-label="İcazə yoxdur: Giriş qadağandır (403)">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            <span class="sr-only">İcazə yoxdur: Giriş qadağandır (403)</span>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Script -->
+    <script th:src="@{/js/theme.js}" src="/js/theme.js"></script>
+
+    <!-- Role Preview & Permissions Matrix Interactivity Script -->
+    <script>
+        function selectRolePreview(role) {
+            // 1. Highlight / unhighlight role cards
+            var roleCardStyles = {
+                'SUPER_ADMIN': ['ring-2', 'ring-purple-500', 'shadow-md'],
+                'ADMIN': ['ring-2', 'ring-[#1e5631]', 'dark:ring-[#2ecc71]', 'shadow-md'],
+                'WAREHOUSE_MANAGER': ['ring-2', 'ring-blue-500', 'shadow-md'],
+                'CASHIER': ['ring-2', 'ring-yellow-500', 'shadow-md']
+            };
+
+            Object.keys(roleCardStyles).forEach(function (r) {
+                var card = document.getElementById('card-' + r);
+                if (card) {
+                    roleCardStyles[r].forEach(function (cls) {
+                        card.classList.remove(cls);
+                    });
+                    if (role === r) {
+                        roleCardStyles[r].forEach(function (cls) {
+                            card.classList.add(cls);
+                        });
+                    }
+                }
+            });
+
+            // 2. Update filter tabs
+            var allRoles = ['ALL', 'SUPER_ADMIN', 'ADMIN', 'WAREHOUSE_MANAGER', 'CASHIER'];
+            allRoles.forEach(function (btnRole) {
+                var btn = document.getElementById('filter-btn-' + btnRole);
+                if (btn) {
+                    if (btnRole === role) {
+                        btn.className = 'perm-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm ' + getActiveButtonClasses(btnRole) + ' cursor-pointer';
+                    } else {
+                        btn.className = 'perm-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white cursor-pointer';
+                    }
+                }
+            });
+
+            // 3. Filter columns in permissions matrix
+            var roleCols = document.querySelectorAll('[data-role-col]');
+            roleCols.forEach(function (col) {
+                var colRole = col.getAttribute('data-role-col');
+                if (role === 'ALL' || role === colRole) {
+                    col.classList.remove('hidden');
+                } else {
+                    col.classList.add('hidden');
+                }
+            });
+
+            // 4. Update preview banner
+            var banner = document.getElementById('preview-role-banner');
+            var bannerText = document.getElementById('preview-role-name');
+            if (banner && bannerText) {
+                if (role === 'ALL') {
+                    banner.classList.add('hidden');
+                } else {
+                    banner.classList.remove('hidden');
+                    var roleLabels = {
+                        'SUPER_ADMIN': 'Super Admin',
+                        'ADMIN': 'Admin',
+                        'WAREHOUSE_MANAGER': 'Anbar Müdiri',
+                        'CASHIER': 'Kassir'
+                    };
+                    bannerText.textContent = roleLabels[role] || role;
+                }
+            }
+
+            // 5. Scroll smoothly to matrix inside inner main scroll container only (prevent window scroll displacement)
+            var mainContainer = document.getElementById('team-main-scroll') || document.querySelector('main');
+            var matrixSection = document.getElementById('permissions-matrix');
+            if (mainContainer && matrixSection) {
+                var containerRect = mainContainer.getBoundingClientRect();
+                var targetRect = matrixSection.getBoundingClientRect();
+                var targetScrollTop = mainContainer.scrollTop + (targetRect.top - containerRect.top) - 16;
+                mainContainer.scrollTo({
+                    top: Math.max(0, targetScrollTop),
+                    behavior: 'smooth'
+                });
+            }
+            if (window.scrollY !== 0 || window.scrollX !== 0) {
+                window.scrollTo(0, 0);
+            }
+        }
+
+        // Ensure outer window never scrolls and stays strictly pinned at (0, 0)
+        window.addEventListener('scroll', function () {
+            if (window.scrollY !== 0 || window.scrollX !== 0) {
+                window.scrollTo(0, 0);
+            }
+        });
+
+        function getActiveButtonClasses(role) {
+            switch (role) {
+                case 'SUPER_ADMIN':
+                    return 'bg-purple-600 text-white dark:bg-purple-600';
+                case 'ADMIN':
+                    return 'bg-[#1e5631] text-white dark:bg-[#2ecc71] dark:text-black';
+                case 'WAREHOUSE_MANAGER':
+                    return 'bg-blue-600 text-white dark:bg-blue-600';
+                case 'CASHIER':
+                    return 'bg-amber-500 text-white dark:bg-amber-500';
+                default:
+                    return 'bg-gray-900 text-white dark:bg-white dark:text-gray-900';
+            }
+        }
+
+        // Custom Role Assignment Dropdown Logic (Multi-Instance Support)
+        function initRoleCustomSelects() {
+            var wrappers = document.querySelectorAll('.role-custom-select-wrapper');
+            if (!wrappers || wrappers.length === 0) return;
+
+            wrappers.forEach(function (wrapper, wIdx) {
+                if (wrapper.dataset.roleSelectInitialized === 'true') return;
+                wrapper.dataset.roleSelectInitialized = 'true';
+
+                var nativeSelect = wrapper.querySelector('.role-native-select');
+                var trigger = wrapper.querySelector('.role-select-trigger');
+                var label = wrapper.querySelector('.role-select-label');
+                var chevron = wrapper.querySelector('.role-select-chevron');
+                var menu = wrapper.querySelector('.role-select-menu');
+                if (!nativeSelect || !trigger || !label || !chevron || !menu) return;
+
+                var options = Array.from(wrapper.querySelectorAll('.role-select-option'));
+                var isOpen = false;
+                var focusedIndex = -1;
+
+                // Dynamic unique IDs for accessibility & ARIA binding
+                var uid = 'role-sel-' + wIdx + '-' + Math.random().toString(36).substring(2, 7);
+                var triggerId = uid + '-btn';
+                var menuId = uid + '-menu';
+                trigger.id = triggerId;
+                menu.id = menuId;
+                trigger.setAttribute('aria-controls', menuId);
+                menu.setAttribute('aria-labelledby', triggerId);
+
+                options.forEach(function (opt, optIdx) {
+                    opt.id = uid + '-opt-' + optIdx;
+                });
+
+                // Progressive enhancement: reveal custom dropdown, hide native select
+                nativeSelect.classList.add('hidden');
+                nativeSelect.setAttribute('aria-hidden', 'true');
+                nativeSelect.setAttribute('tabindex', '-1');
+                trigger.classList.remove('hidden');
+
+                function getOptionData(opt) {
+                    var val = opt.getAttribute('data-value') || '';
+                    var titleEl = opt.querySelector('.role-opt-title');
+                    var subEl = opt.querySelector('.role-opt-sub');
+                    var title = titleEl ? titleEl.textContent.trim() : val;
+                    var sub = subEl ? subEl.textContent.trim() : '';
+                    return { value: val, title: title, sub: sub };
+                }
+
+                function syncFromNativeSelect() {
+                    var currentVal = nativeSelect.value;
+                    var selectedOpt = null;
+
+                    options.forEach(function (opt) {
+                        var val = opt.getAttribute('data-value');
+                        var isSelected = (val === currentVal);
+                        opt.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+                        var checkIcon = opt.querySelector('.role-check-icon');
+                        if (checkIcon) {
+                            if (isSelected) {
+                                checkIcon.classList.remove('hidden');
+                                opt.classList.add('bg-gray-100/70', 'dark:bg-white/10');
+                            } else {
+                                checkIcon.classList.add('hidden');
+                                opt.classList.remove('bg-gray-100/70', 'dark:bg-white/10');
+                            }
+                        }
+                        if (isSelected) {
+                            selectedOpt = opt;
+                        }
+                    });
+
+                    if (selectedOpt) {
+                        var data = getOptionData(selectedOpt);
+                        label.innerHTML = '<span class="font-bold text-gray-900 dark:text-white">' + data.title + '</span>' +
+                            (data.sub ? ' <span class="text-[11px] text-gray-500 dark:text-gray-400 font-normal">(' + data.sub + ')</span>' : '');
+                    } else if (options.length > 0) {
+                        var firstData = getOptionData(options[0]);
+                        label.innerHTML = '<span class="font-bold text-gray-900 dark:text-white">' + firstData.title + '</span>' +
+                            (firstData.sub ? ' <span class="text-[11px] text-gray-500 dark:text-gray-400 font-normal">(' + firstData.sub + ')</span>' : '');
+                    }
+                }
+
+                function openMenu() {
+                    if (isOpen) return;
+
+                    // Close any other open role select dropdowns first
+                    document.querySelectorAll('.role-custom-select-wrapper').forEach(function (otherWrapper) {
+                        if (otherWrapper !== wrapper && typeof otherWrapper._closeRoleMenu === 'function') {
+                            otherWrapper._closeRoleMenu(false);
+                        }
+                    });
+
+                    // Smart vertical positioning: flip upward if near viewport bottom
+                    var rect = trigger.getBoundingClientRect();
+                    var viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+                    var spaceBelow = viewportHeight - rect.bottom;
+                    var spaceAbove = rect.top;
+                    if (spaceBelow < 210 && spaceAbove > spaceBelow) {
+                        menu.classList.remove('top-full', 'mt-1.5');
+                        menu.classList.add('bottom-full', 'mb-1.5');
+                    } else {
+                        menu.classList.remove('bottom-full', 'mb-1.5');
+                        menu.classList.add('top-full', 'mt-1.5');
+                    }
+
+                    isOpen = true;
+                    wrapper._isOpen = true;
+                    menu.classList.remove('hidden');
+                    trigger.setAttribute('aria-expanded', 'true');
+                    chevron.classList.add('rotate-180');
+
+                    var curVal = nativeSelect.value;
+                    focusedIndex = options.findIndex(function (o) {
+                        return o.getAttribute('data-value') === curVal;
+                    });
+                    if (focusedIndex === -1 && options.length > 0) focusedIndex = 0;
+                    highlightOption(focusedIndex);
+                }
+
+                function closeMenu(focusTrigger) {
+                    if (!isOpen) return;
+                    isOpen = false;
+                    wrapper._isOpen = false;
+                    menu.classList.add('hidden');
+                    trigger.setAttribute('aria-expanded', 'false');
+                    trigger.removeAttribute('aria-activedescendant');
+                    chevron.classList.remove('rotate-180');
+                    if (focusTrigger) {
+                        trigger.focus();
+                    }
+                }
+
+                wrapper._closeRoleMenu = closeMenu;
+                wrapper._isOpen = false;
+
+                function toggleMenu() {
+                    if (isOpen) {
+                        closeMenu(true);
+                    } else {
+                        openMenu();
+                    }
+                }
+
+                function highlightOption(index) {
+                    if (index < 0 || index >= options.length) return;
+                    focusedIndex = index;
+                    options[index].focus();
+                    trigger.setAttribute('aria-activedescendant', options[index].id);
+                }
+
+                function selectOption(opt) {
+                    var newVal = opt.getAttribute('data-value');
+                    if (newVal) {
+                        nativeSelect.value = newVal;
+                        nativeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                        syncFromNativeSelect();
+                    }
+                    closeMenu(true);
+                }
+
+                // Trigger button events
+                trigger.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    toggleMenu();
+                });
+
+                trigger.addEventListener('keydown', function (e) {
+                    if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        if (!isOpen) {
+                            openMenu();
+                        } else if (e.key === 'ArrowDown') {
+                            highlightOption((focusedIndex + 1) % options.length);
+                        } else if (e.key === 'ArrowUp') {
+                            highlightOption((focusedIndex - 1 + options.length) % options.length);
+                        } else if (e.key === 'Enter' || e.key === ' ') {
+                            if (focusedIndex >= 0 && focusedIndex < options.length) {
+                                selectOption(options[focusedIndex]);
+                            }
+                        }
+                    } else if (e.key === 'Escape' && isOpen) {
+                        e.preventDefault();
+                        closeMenu(true);
+                    }
+                });
+
+                // Options events
+                options.forEach(function (opt, idx) {
+                    opt.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        selectOption(opt);
+                    });
+
+                    opt.addEventListener('mouseenter', function () {
+                        focusedIndex = idx;
+                    });
+
+                    opt.addEventListener('keydown', function (e) {
+                        if (e.key === 'ArrowDown') {
+                            e.preventDefault();
+                            highlightOption((idx + 1) % options.length);
+                        } else if (e.key === 'ArrowUp') {
+                            highlightOption((idx - 1 + options.length) % options.length);
+                        } else if (e.key === 'Home') {
+                            e.preventDefault();
+                            highlightOption(0);
+                        } else if (e.key === 'End') {
+                            e.preventDefault();
+                            highlightOption(options.length - 1);
+                        } else if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            selectOption(opt);
+                        } else if (e.key === 'Escape') {
+                            e.preventDefault();
+                            closeMenu(true);
+                        } else if (e.key === 'Tab') {
+                            closeMenu(false);
+                        }
+                    });
+                });
+
+                // Native select change sync
+                nativeSelect.addEventListener('change', function () {
+                    syncFromNativeSelect();
+                });
+
+                // Initial sync
+                syncFromNativeSelect();
+            });
+
+            // Global click outside & Escape listeners (registered once on document)
+            if (!document._roleCustomSelectGlobalClickBound) {
+                document._roleCustomSelectGlobalClickBound = true;
+                document.addEventListener('click', function (e) {
+                    var openWrappers = document.querySelectorAll('.role-custom-select-wrapper');
+                    openWrappers.forEach(function (wrapper) {
+                        if (wrapper._isOpen && !wrapper.contains(e.target)) {
+                            wrapper._closeRoleMenu(false);
+                        }
+                    });
+                });
+
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape') {
+                        var openWrappers = document.querySelectorAll('.role-custom-select-wrapper');
+                        openWrappers.forEach(function (wrapper) {
+                            if (wrapper._isOpen) {
+                                wrapper._closeRoleMenu(true);
+                            }
+                        });
+                    }
+                });
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initRoleCustomSelects);
+        } else {
+            initRoleCustomSelects();
+        }
+    </script>
+</body>
+
+</html>
+

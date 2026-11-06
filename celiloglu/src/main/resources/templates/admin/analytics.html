@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="az" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cəliloğlu - Müştəri Hesablaşmaları</title>
+    <meta name="description" content="Cəliloğlu Admin Panel - Müştəri Hesablaşmaları və Maliyyə İcmalı">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e5631',
+                        secondary: '#3b82f6',
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light-mode');
+        } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light-mode');
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="/css/style.css">
+    <script th:src="@{/js/script.js}" src="/js/script.js" defer></script>
+</head>
+
+<body class="flex h-screen overflow-hidden text-gray-800 dark:text-[#e0e0e0] bg-gray-50 dark:bg-[#121212] transition-colors">
+
+    <!-- Sidebar Fragment -->
+    <aside th:replace="~{fragments/admin-sidebar :: sidebar('analytics')}"></aside>
+
+    <!-- Main Wrapper -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50 dark:bg-[#121212] transition-colors">
+
+        <!-- Top Header -->
+        <header class="h-20 bg-white dark:bg-[#121212] border-b border-gray-200 dark:border-[#333333] flex items-center justify-between px-8 flex-shrink-0 z-10 transition-colors duration-300 shadow-sm dark:shadow-lg">
+            <div>
+                <h1 class="text-xl font-bold text-gray-800 dark:text-[#e0e0e0] transition-colors duration-300">Müştəri Hesablaşmaları</h1>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Müştərilər üzrə sifarişlər, ödənişlər və qalıq borclar.</p>
+            </div>
+            <div class="flex items-center gap-6">
+
+                <!-- Theme Toggle -->
+                <button id="theme-toggle" type="button"
+                    class="text-gray-500 dark:text-indigo-100 hover:text-primary dark:hover:text-white flex flex-col items-center transition-all duration-300 group dark:hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] focus:outline-none">
+                    <svg id="theme-toggle-dark-icon" class="hidden h-6 w-6 group-hover:scale-110 transition-transform"
+                        fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                    </svg>
+                    <svg id="theme-toggle-light-icon" class="hidden h-6 w-6 group-hover:scale-110 transition-transform"
+                        fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                            fill-rule="evenodd" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="text-[11px] font-medium mt-1">Rejim</span>
+                </button>
+
+                <!-- Profile Block Fragment -->
+                <div th:replace="~{fragments/admin-header :: profile}"></div>
+            </div>
+        </header>
+
+        <!-- Scrollable Content -->
+        <main class="flex-1 overflow-y-auto p-8">
+            <div class="max-w-7xl mx-auto space-y-6">
+
+                <!-- 3 Summary Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                    <!-- Card 1: Hesaba alınan sifarişlərin ümumi məbləği -->
+                    <div class="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border border-gray-100 dark:border-[#333333] shadow-sm flex flex-col justify-center transition-colors">
+                        <p class="text-xs font-semibold text-gray-500 dark:text-[#e0e0e0] uppercase tracking-wider opacity-80 mb-2">
+                            Hesaba alınan sifarişlərin ümumi məbləği
+                        </p>
+                        <p class="text-3xl font-black text-gray-900 dark:text-[#e0e0e0]"
+                           th:text="${summary.totalOrderAmount != null ? #numbers.formatDecimal(summary.totalOrderAmount, 1, 2, 'POINT') + ' AZN' : '0.00 AZN'}">
+                            0.00 AZN
+                        </p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">Ləğv edilməmiş bütün sifarişlərin məbləği</p>
+                    </div>
+
+                    <!-- Card 2: Həmin sifarişlər üzrə ödənilmiş məbləğ -->
+                    <div class="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border border-gray-100 dark:border-[#333333] shadow-sm flex flex-col justify-center transition-colors">
+                        <p class="text-xs font-semibold text-gray-500 dark:text-[#e0e0e0] uppercase tracking-wider opacity-80 mb-2">
+                            Həmin sifarişlər üzrə ödənilmiş məbləğ
+                        </p>
+                        <p class="text-3xl font-black text-[#1e5631] dark:text-[#4ade80]"
+                           th:text="${summary.totalPaidAmount != null ? #numbers.formatDecimal(summary.totalPaidAmount, 1, 2, 'POINT') + ' AZN' : '0.00 AZN'}">
+                            0.00 AZN
+                        </p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">Təsdiqlənmiş faktiki daxilolmalar</p>
+                    </div>
+
+                    <!-- Card 3: Ümumi qalıq borc -->
+                    <div class="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border border-gray-100 dark:border-[#333333] shadow-sm flex flex-col justify-center transition-colors">
+                        <p class="text-xs font-semibold text-gray-500 dark:text-[#e0e0e0] uppercase tracking-wider opacity-80 mb-2">
+                            Ümumi qalıq borc
+                        </p>
+                        <p class="text-3xl font-black text-amber-600 dark:text-amber-400"
+                           th:text="${summary.totalRemainingDebt != null ? #numbers.formatDecimal(summary.totalRemainingDebt, 1, 2, 'POINT') + ' AZN' : '0.00 AZN'}">
+                            0.00 AZN
+                        </p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">Müştərilərin yekun ödənilməli borcu</p>
+                    </div>
+
+                </div>
+
+                <!-- Customer Analytics Table Card -->
+                <div class="bg-white dark:bg-[#1e1e1e] rounded-2xl border border-gray-100 dark:border-[#333333] shadow-sm overflow-hidden transition-colors">
+
+                    <!-- Table Header -->
+                    <div class="px-6 py-5 border-b border-gray-100 dark:border-[#333333] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-900 dark:text-white">Müştəri Hesablaşmaları</h2>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Ləğv edilməmiş sifarişi olan bütün müştərilərin maliyyə icmalı</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-gray-300">
+                                Cəmi: <span class="font-bold ml-1" th:text="${customersPage != null ? customersPage.totalElements : 0}">0</span> müştəri
+                            </span>
+                            <a id="btn-export-analytics-excel"
+                               th:href="@{/admin/analytics/export/excel}"
+                               class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#1e1e1e] text-gray-700 dark:text-[#e0e0e0] text-sm font-semibold hover:bg-gray-50 dark:hover:bg-[#282828] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1e5631]/50">
+                                <svg class="h-4 w-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <span>Excel-ə çıxart</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div th:if="${customers == null or customers.isEmpty()}" class="p-12 text-center">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-400">
+                            <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Heç bir hesablaşma məlumatı tapılmadı</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Sistemdə ləğv edilməmiş sifarişi olan müştəri mövcud deyil.</p>
+                    </div>
+
+                    <!-- Table -->
+                    <div th:if="${customers != null and !customers.isEmpty()}" class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead>
+                                <tr class="bg-gray-50/80 dark:bg-white/5 border-b border-gray-100 dark:border-[#333333] text-xs font-semibold text-gray-500 dark:text-[#e0e0e0] uppercase tracking-wider transition-colors">
+                                    <th scope="col" class="px-6 py-4">Müştəri</th>
+                                    <th scope="col" class="px-6 py-4">Şirkət</th>
+                                    <th scope="col" class="px-6 py-4 text-center">Sifariş Sayı</th>
+                                    <th scope="col" class="px-6 py-4 text-right">Məbləğ Cəmi</th>
+                                    <th scope="col" class="px-6 py-4 text-right">Ödənilmiş Məbləğ</th>
+                                    <th scope="col" class="px-6 py-4 text-right">Qalıq Borc</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-[#333333]">
+                                <tr th:each="customer : ${customers}" class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+
+                                    <!-- Ad-Soyad və Username -->
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex flex-col">
+                                            <span class="font-semibold text-gray-900 dark:text-white"
+                                                  th:text="${customer.fullName}">Ad Soyad</span>
+                                            <span class="text-xs text-gray-400 dark:text-gray-500 font-mono"
+                                                  th:if="${customer.username != null and customer.fullName != customer.username}"
+                                                  th:text="'@' + ${customer.username}">@user</span>
+                                        </div>
+                                    </td>
+
+                                    <!-- Şirkət Adı -->
+                                    <td class="px-6 py-4 whitespace-nowrap text-gray-700 dark:text-gray-300 font-medium"
+                                        th:text="${customer.companyName}">
+                                        —
+                                    </td>
+
+                                    <!-- Ləğv edilməmiş sifariş sayı -->
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 dark:bg-white/5 dark:text-gray-300"
+                                              th:text="${customer.orderCount} + ' sifariş'">
+                                            1 sifariş
+                                        </span>
+                                    </td>
+
+                                    <!-- TotalAmount cəmi -->
+                                    <td class="px-6 py-4 whitespace-nowrap text-right font-medium text-gray-900 dark:text-white"
+                                        th:text="${customer.totalOrderAmount != null ? #numbers.formatDecimal(customer.totalOrderAmount, 1, 2, 'POINT') + ' AZN' : '0.00 AZN'}">
+                                        0.00 AZN
+                                    </td>
+
+                                    <!-- Təsdiqlənmiş ödənişlərin cəmi -->
+                                    <td class="px-6 py-4 whitespace-nowrap text-right font-semibold text-[#1e5631] dark:text-[#4ade80]"
+                                        th:text="${customer.totalPaidAmount != null ? #numbers.formatDecimal(customer.totalPaidAmount, 1, 2, 'POINT') + ' AZN' : '0.00 AZN'}">
+                                        0.00 AZN
+                                    </td>
+
+                                    <!-- Qalıq borc -->
+                                    <td class="px-6 py-4 whitespace-nowrap text-right font-extrabold"
+                                        th:classappend="${customer.remainingDebt != null and customer.remainingDebt.compareTo(T(java.math.BigDecimal).ZERO) > 0} ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'"
+                                        th:text="${customer.remainingDebt != null ? #numbers.formatDecimal(customer.remainingDebt, 1, 2, 'POINT') + ' AZN' : '0.00 AZN'}">
+                                        0.00 AZN
+                                    </td>
+
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div th:if="${customersPage != null and customersPage.totalPages > 1}"
+                        class="px-6 py-4 border-t border-gray-100 dark:border-[#333333] flex flex-col sm:flex-row items-center justify-between gap-4">
+
+                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                            Göstərilir: <span class="font-bold text-gray-900 dark:text-white"
+                                th:text="${customersPage.number * customersPage.size + 1}">1</span> - 
+                            <span class="font-bold text-gray-900 dark:text-white"
+                                th:text="${customersPage.number * customersPage.size + customers.size()}">10</span> / 
+                            Ümumi: <span class="font-bold text-gray-900 dark:text-white"
+                                th:text="${customersPage.totalElements}">50</span>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <!-- Əvvəlki -->
+                            <a th:if="${customersPage.hasPrevious()}"
+                               th:href="@{/admin/analytics(page=${customersPage.number - 1}, size=${customersPage.size})}"
+                               class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-[#333333] text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">
+                                Əvvəlki
+                            </a>
+                            <span th:unless="${customersPage.hasPrevious()}"
+                                  class="px-3 py-1.5 rounded-lg border border-gray-100 dark:border-[#222222] text-xs font-medium text-gray-400 dark:text-gray-600 cursor-not-allowed">
+                                Əvvəlki
+                            </span>
+
+                            <!-- Səhifə nömrələri -->
+                            <div class="flex items-center gap-1">
+                                <th:block th:each="pageNum : ${#numbers.sequence(0, customersPage.totalPages - 1)}">
+                                    <a th:if="${pageNum >= customersPage.number - 2 and pageNum <= customersPage.number + 2}"
+                                       th:href="@{/admin/analytics(page=${pageNum}, size=${customersPage.size})}"
+                                       th:text="${pageNum + 1}"
+                                       th:class="${pageNum == customersPage.number} 
+                                            ? 'px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-white shadow-sm' 
+                                            : 'px-3 py-1.5 rounded-lg border border-gray-200 dark:border-[#333333] text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors'">
+                                        1
+                                    </a>
+                                </th:block>
+                            </div>
+
+                            <!-- Növbəti -->
+                            <a th:if="${customersPage.hasNext()}"
+                               th:href="@{/admin/analytics(page=${customersPage.number + 1}, size=${customersPage.size})}"
+                               class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-[#333333] text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">
+                                Növbəti
+                            </a>
+                            <span th:unless="${customersPage.hasNext()}"
+                                  class="px-3 py-1.5 rounded-lg border border-gray-100 dark:border-[#222222] text-xs font-medium text-gray-400 dark:text-gray-600 cursor-not-allowed">
+                                Növbəti
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Script -->
+    <script th:src="@{/js/theme.js}" src="/js/theme.js"></script>
+</body>
+
+</html>

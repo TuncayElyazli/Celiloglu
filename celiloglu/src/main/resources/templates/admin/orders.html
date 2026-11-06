@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="az" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cəliloğlu - Sifarişlər</title>
+    <meta name="description" content="Cəliloğlu Admin Panel - Sifarişlərin idarəetməsi">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e5631',
+                        secondary: '#3b82f6',
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light-mode');
+        } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light-mode');
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="/css/style.css">
+    <script th:src="@{/js/script.js}" src="/js/script.js" defer></script>
+</head>
+
+<body class="flex h-screen overflow-hidden text-gray-800 dark:text-[#e0e0e0] bg-gray-50 dark:bg-[#121212] transition-colors">
+
+    <!-- Sidebar Fragment -->
+    <aside th:replace="~{fragments/admin-sidebar :: sidebar('orders')}"></aside>
+
+    <!-- Main Wrapper -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50 dark:bg-[#121212] transition-colors">
+
+        <!-- Top Header -->
+        <header class="h-20 bg-white dark:bg-[#121212] border-b border-gray-200 dark:border-[#333333] flex items-center justify-between px-8 flex-shrink-0 z-10 transition-colors duration-300 shadow-sm dark:shadow-lg">
+            <h1 class="text-xl font-bold text-gray-800 dark:text-[#e0e0e0] transition-colors duration-300">Sifarişlər</h1>
+            <div class="flex items-center gap-6">
+
+                <!-- Theme Toggle -->
+                <button id="theme-toggle" type="button"
+                    class="text-gray-500 dark:text-indigo-100 hover:text-primary dark:hover:text-white flex flex-col items-center transition-all duration-300 group dark:hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] focus:outline-none">
+                    <svg id="theme-toggle-dark-icon" class="hidden h-6 w-6 group-hover:scale-110 transition-transform"
+                        fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                    </svg>
+                    <svg id="theme-toggle-light-icon" class="hidden h-6 w-6 group-hover:scale-110 transition-transform"
+                        fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                            fill-rule="evenodd" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="text-[11px] font-medium mt-1">Rejim</span>
+                </button>
+
+                <!-- Profile Block Fragment -->
+                <div th:replace="~{fragments/admin-header :: profile}"></div>
+            </div>
+        </header>
+
+        <!-- Scrollable Content -->
+        <main class="flex-1 overflow-y-auto p-8">
+            <div class="max-w-7xl mx-auto space-y-6">
+
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">Bütün Müştəri Sifarişləri</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Bütün müştərilər tərəfindən yerləşdirilmiş sifarişlərin icra və ödəniş vəziyyəti.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-4">
+                        <div class="text-xs text-gray-500 dark:text-gray-400" th:if="${ordersPage != null}">
+                            Ümumi sifariş sayı: <span class="font-bold text-gray-900 dark:text-white" th:text="${ordersPage.totalElements}">0</span>
+                        </div>
+                        <a id="btn-export-orders-excel" th:href="@{/admin/orders/export/excel}"
+                           class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#1e1e1e] text-gray-700 dark:text-[#e0e0e0] text-sm font-semibold hover:bg-gray-50 dark:hover:bg-[#282828] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1e5631]/50">
+                            <svg class="h-4 w-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Excel-ə çıxart
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Orders Table Card -->
+                <div class="bg-white dark:bg-[#1e1e1e] rounded-2xl border border-gray-100 dark:border-[#333333] shadow-sm dark:shadow-[0_0_15px_rgba(255,255,255,0.05)] overflow-hidden transition-colors">
+                    
+                    <!-- Empty State -->
+                    <div th:if="${ordersPage == null or ordersPage.isEmpty()}" class="p-12 text-center">
+                        <svg class="h-16 w-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-1">Heç bir sifariş tapılmadı</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Hazırda sistemdə qeydə alınmış heç bir müştəri sifarişi yoxdur.</p>
+                    </div>
+
+                    <!-- Table -->
+                    <div th:if="${ordersPage != null and !ordersPage.isEmpty()}" class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead>
+                                <tr class="bg-gray-50/80 dark:bg-white/5 border-b border-gray-100 dark:border-[#333333] text-xs font-semibold text-gray-500 dark:text-[#e0e0e0] uppercase tracking-wider transition-colors">
+                                    <th scope="col" class="px-6 py-4">Sifariş №</th>
+                                    <th scope="col" class="px-6 py-4">Tarix</th>
+                                    <th scope="col" class="px-6 py-4">Müştəri</th>
+                                    <th scope="col" class="px-6 py-4 text-center">Miqdar</th>
+                                    <th scope="col" class="px-6 py-4" th:if="${!isWarehouse}">Məbləğ</th>
+                                    <th scope="col" class="px-6 py-4">Sifariş Statusu</th>
+                                    <th scope="col" class="px-6 py-4" th:if="${!isWarehouse}">Ödəniş Statusu</th>
+                                    <th scope="col" class="px-6 py-4 text-right">Əməliyyat</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-[#333333]">
+                                <tr th:each="order : ${orders}" class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                    <!-- Sifariş № -->
+                                    <td class="px-6 py-4 font-bold whitespace-nowrap">
+                                        <a th:href="@{/admin/orders/{id}(id=${order.id})}"
+                                           th:text="'#' + ${order.orderNumber}"
+                                           class="text-primary hover:text-primary/80 dark:text-[#2ecc71] dark:hover:text-[#2ecc71]/80 hover:underline">
+                                            #ORD-00124
+                                        </a>
+                                    </td>
+
+                                    <!-- Tarix -->
+                                    <td class="px-6 py-4 text-gray-600 dark:text-gray-400 whitespace-nowrap text-xs sm:text-sm"
+                                        th:text="${order.orderDate != null ? #temporals.format(order.orderDate, 'dd.MM.yyyy HH:mm') : '-'}">
+                                        24.09.2026 14:30
+                                    </td>
+
+                                    <!-- Müştəri Məlumatı -->
+                                    <td class="px-6 py-4 text-gray-900 dark:text-white">
+                                        <div>
+                                            <span class="font-semibold" th:text="${order.customerFullName != null ? order.customerFullName : (order.customerUsername != null ? order.customerUsername : '-')}">Müştəri Adı</span>
+                                            <span class="text-xs text-gray-400 dark:text-gray-500 font-normal ml-1"
+                                                  th:if="${order.customerUsername != null}"
+                                                  th:text="'(@' + ${order.customerUsername} + ')'">(@user1)</span>
+                                            <p class="text-xs text-primary dark:text-[#2ecc71] font-medium mt-0.5"
+                                               th:if="${order.customerCompanyName != null and !#strings.isEmpty(order.customerCompanyName)}"
+                                               th:text="'Şirkət: ' + ${order.customerCompanyName}">Şirkət: ABC MMC</p>
+                                        </div>
+                                    </td>
+
+                                    <!-- Miqdar -->
+                                    <td class="px-6 py-4 text-center font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap"
+                                        th:text="|${order.totalItems != null ? order.totalItems : 0} ədəd|">
+                                        3 ədəd
+                                    </td>
+
+                                    <!-- Məbləğ -->
+                                    <td th:if="${!isWarehouse}" class="px-6 py-4 font-bold text-gray-900 dark:text-white whitespace-nowrap"
+                                        th:text="${order.totalAmount != null ? #numbers.formatDecimal(order.totalAmount, 1, 2, 'POINT') + ' AZN' : '0.00 AZN'}">
+                                        150.00 AZN
+                                    </td>
+
+                                    <!-- Sifariş Statusu -->
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span th:if="${order.status != null and order.status.name() == 'GÖZLƏYİR'}"
+                                              class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2.5 py-1 rounded-full border border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-700/50 uppercase tracking-wider"
+                                              th:text="${order.status.displayName}">Gözləyir</span>
+                                        <span th:if="${order.status != null and order.status.name() == 'HAZIRLANIR'}"
+                                              class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded-full border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700/50 uppercase tracking-wider"
+                                              th:text="${order.status.displayName}">Hazırlanır</span>
+                                        <span th:if="${order.status != null and order.status.name() == 'KARQOYA_VERİLDİ'}"
+                                              class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2.5 py-1 rounded-full border border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-400 dark:border-indigo-700/50 uppercase tracking-wider"
+                                              th:text="${order.status.displayName}">Karqoya verildi</span>
+                                        <span th:if="${order.status != null and order.status.name() == 'ÇATDIRILDI'}"
+                                              class="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-1 rounded-full border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700/50 uppercase tracking-wider"
+                                              th:text="${order.status.displayName}">Çatdırıldı</span>
+                                        <span th:if="${order.status != null and order.status.name() == 'LƏĞV_EDİLDİ'}"
+                                              class="bg-red-100 text-red-800 text-xs font-bold px-2.5 py-1 rounded-full border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-700/50 uppercase tracking-wider"
+                                              th:text="${order.status.displayName}">Ləğv edildi</span>
+                                    </td>
+
+                                    <!-- Ödəniş Statusu -->
+                                    <td th:if="${!isWarehouse}" class="px-6 py-4 whitespace-nowrap">
+                                        <span th:if="${order.paymentStatus != null and order.paymentStatus.name() == 'TAM_ÖDƏNİLMİŞ'}"
+                                              class="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-1 rounded-full border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700/50 uppercase tracking-wider"
+                                              th:text="${order.paymentStatus.displayName}">Tam Ödənilmiş</span>
+                                        <span th:if="${order.paymentStatus != null and order.paymentStatus.name() == 'QİSMƏN_ÖDƏNİLMİŞ'}"
+                                              class="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-1 rounded-full border border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700/50 uppercase tracking-wider"
+                                              th:text="${order.paymentStatus.displayName}">Qismən Ödənilmiş</span>
+                                        <span th:if="${order.paymentStatus != null and order.paymentStatus.name() == 'ÖDƏNİŞ_GÖZLƏYİR'}"
+                                              class="bg-gray-100 text-gray-800 text-xs font-bold px-2.5 py-1 rounded-full border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 uppercase tracking-wider"
+                                              th:text="${order.paymentStatus.displayName}">Ödəniş Gözləyən</span>
+                                    </td>
+
+                                    <!-- Əməliyyat -->
+                                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                                        <a th:href="@{/admin/orders/{id}(id=${order.id})}"
+                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary dark:bg-[#1e5631]/30 dark:hover:bg-[#1e5631]/50 dark:text-[#2ecc71] transition-colors"
+                                           title="Sifariş detallarına bax">
+                                            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                            Baxış
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div th:if="${ordersPage != null and ordersPage.totalPages > 1}"
+                        class="px-6 py-4 border-t border-gray-100 dark:border-[#333333] flex items-center justify-between">
+                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                            Səhifə <span class="font-semibold text-gray-800 dark:text-white" th:text="${ordersPage.number + 1}">1</span> / <span th:text="${ordersPage.totalPages}">1</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <!-- Əvvəlki -->
+                            <a th:if="${!ordersPage.first}" th:href="@{/admin/orders(page=${ordersPage.number - 1})}"
+                                class="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 dark:border-[#333333] text-gray-700 dark:text-[#e0e0e0] hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                Əvvəlki
+                            </a>
+                            <!-- Səhifə nömrələri -->
+                            <th:block th:each="p : ${#numbers.sequence(0, ordersPage.totalPages - 1)}">
+                                <a th:href="@{/admin/orders(page=${p})}"
+                                    th:text="${p + 1}"
+                                    class="px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors"
+                                    th:classappend="${p == ordersPage.number} ? ' bg-primary text-white border-primary' : ' border-gray-200 dark:border-[#333333] text-gray-700 dark:text-[#e0e0e0] hover:bg-gray-50 dark:hover:bg-white/5'">
+                                    1
+                                </a>
+                            </th:block>
+                            <!-- Növbəti -->
+                            <a th:if="${!ordersPage.last}" th:href="@{/admin/orders(page=${ordersPage.number + 1})}"
+                                class="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 dark:border-[#333333] text-gray-700 dark:text-[#e0e0e0] hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                Növbəti
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Script -->
+    <script th:src="@{/js/theme.js}" src="/js/theme.js"></script>
+</body>
+
+</html>
+

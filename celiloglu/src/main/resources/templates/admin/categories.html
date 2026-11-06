@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="az" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cəliloğlu - Kateqoriyalar</title>
+    <meta name="description" content="Cəliloğlu Admin Panel - Kateqoriya idarəetməsi">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e5631',
+                        secondary: '#3b82f6',
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light-mode');
+        } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light-mode');
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="/css/style.css">
+    <script th:src="@{/js/script.js}" src="/js/script.js" defer></script>
+</head>
+
+<body class="flex h-screen overflow-hidden text-gray-800 dark:text-[#e0e0e0] bg-gray-50 dark:bg-[#121212] transition-colors">
+
+    <!-- Sidebar -->
+    <aside th:replace="~{fragments/admin-sidebar :: sidebar('categories')}"></aside>
+
+    <!-- Main Wrapper -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50 dark:bg-[#121212] transition-colors">
+
+        <!-- Top Header -->
+        <header
+            class="h-20 bg-white dark:bg-[#121212] border-b border-gray-200 dark:border-[#333333] flex items-center justify-between px-8 flex-shrink-0 z-10 transition-colors duration-300 shadow-sm dark:shadow-lg">
+            <h1 class="text-xl font-bold text-gray-800 dark:text-[#e0e0e0] transition-colors duration-300">Kateqoriyalar</h1>
+            <div class="flex items-center gap-6">
+
+                <!-- Theme Toggle -->
+                <button id="theme-toggle" type="button"
+                    class="text-gray-500 dark:text-indigo-100 hover:text-primary dark:hover:text-white flex flex-col items-center transition-all duration-300 group dark:hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] focus:outline-none">
+                    <svg id="theme-toggle-dark-icon" class="hidden h-6 w-6 group-hover:scale-110 transition-transform"
+                        fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                    </svg>
+                    <svg id="theme-toggle-light-icon" class="hidden h-6 w-6 group-hover:scale-110 transition-transform"
+                        fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                            fill-rule="evenodd" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="text-[11px] font-medium mt-1">Rejim</span>
+                </button>
+
+                <!-- Profile Block Fragment -->
+                <div th:replace="~{fragments/admin-header :: profile}"></div>
+            </div>
+        </header>
+
+        <!-- Scrollable Content -->
+        <main class="flex-1 overflow-y-auto p-8">
+            <div class="max-w-5xl mx-auto space-y-8">
+
+                <!-- Success / Error Messages -->
+                <p th:if="${categorySuccess != null}" th:text="${categorySuccess}" role="status"
+                    class="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800 dark:border-green-800 dark:bg-green-900/20 dark:text-green-300">
+                </p>
+                <p th:if="${categoryError != null}" th:text="${categoryError}" role="alert"
+                    class="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
+                </p>
+
+                <!-- Add / Edit Form -->
+                <div
+                    class="bg-white dark:bg-[#1e1e1e] rounded-2xl border border-gray-100 dark:border-[#333333] shadow-sm dark:shadow-[0_0_15px_rgba(255,255,255,0.05)] p-6 transition-colors">
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-[#e0e0e0] mb-4"
+                        th:text="${editingCategoryId != null} ? 'Kateqoriyanı redaktə et' : 'Yeni kateqoriya əlavə et'">
+                        Yeni kateqoriya əlavə et
+                    </h2>
+
+                    <form method="post"
+                          th:action="${editingCategoryId != null}
+                              ? @{/admin/categories/{id}(id=${editingCategoryId})}
+                              : @{/admin/categories}"
+                          th:object="${categoryForm}">
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="cat-name"
+                                    class="block text-sm font-semibold text-gray-700 dark:text-[#e0e0e0] mb-1">Kateqoriya adı *</label>
+                                <input id="cat-name" type="text" th:field="*{name}" required
+                                    class="w-full rounded-xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#121212] px-4 py-2.5 text-sm text-gray-900 dark:text-[#e0e0e0] focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors"
+                                    placeholder="Kateqoriya adını daxil edin">
+                            </div>
+                            <div>
+                                <label for="cat-description"
+                                    class="block text-sm font-semibold text-gray-700 dark:text-[#e0e0e0] mb-1">Təsvir</label>
+                                <input id="cat-description" type="text" th:field="*{description}"
+                                    class="w-full rounded-xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#121212] px-4 py-2.5 text-sm text-gray-900 dark:text-[#e0e0e0] focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors"
+                                    placeholder="Qısa təsvir (istəyə bağlı)">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <button type="submit"
+                                class="bg-gray-900 dark:bg-primary text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-gray-800 dark:hover:bg-primary/90 transition-colors shadow-sm flex items-center gap-2 focus:ring-4 focus:ring-gray-200">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span th:text="${editingCategoryId != null} ? 'Yadda saxla' : 'Əlavə et'">Əlavə et</span>
+                            </button>
+                            <a th:if="${editingCategoryId != null}" th:href="@{/admin/categories}"
+                                class="text-sm font-semibold text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333333] hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                Ləğv et
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Category List Table -->
+                <div class="flex items-center justify-between mb-2">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-900 dark:text-[#e0e0e0]">Kateqoriya siyahısı</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400"
+                            th:text="${#lists.size(categoryList)} + ' kateqoriya'">0 kateqoriya</p>
+                    </div>
+                </div>
+
+                <div
+                    class="bg-white dark:bg-[#1e1e1e] rounded-2xl border border-gray-100 dark:border-[#333333] shadow-sm dark:shadow-[0_0_15px_rgba(255,255,255,0.05)] overflow-hidden transition-colors">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr
+                                    class="bg-gray-50/80 dark:bg-[#1e1e1e] border-b border-gray-100 dark:border-[#333333] text-xs font-semibold text-gray-500 dark:text-[#e0e0e0] uppercase tracking-wider transition-colors">
+                                    <th class="px-6 py-4">Ad</th>
+                                    <th class="px-6 py-4">Təsvir</th>
+                                    <th class="px-6 py-4 text-center">Məhsul sayı</th>
+                                    <th class="px-6 py-4 text-right">Əməliyyatlar</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-[#333333] text-sm">
+                                <tr th:if="${#lists.isEmpty(categoryList)}">
+                                    <td colspan="4" class="px-6 py-10 text-center text-gray-500 dark:text-gray-400">
+                                        Hələ heç bir kateqoriya əlavə edilməyib.
+                                    </td>
+                                </tr>
+                                <tr th:each="cat : ${categoryList}"
+                                    class="hover:bg-gray-50/50 dark:hover:bg-[#1e5631]/10 transition-colors">
+                                    <td class="px-6 py-4 font-bold text-gray-900 dark:text-[#e0e0e0]"
+                                        th:text="${cat.name}">Kateqoriya</td>
+                                    <td class="px-6 py-4 text-gray-500 dark:text-gray-400 max-w-xs truncate"
+                                        th:text="${cat.description}" th:title="${cat.description}">Təsvir</td>
+                                    <td class="px-6 py-4 text-center">
+                                        <span th:if="${cat.productCount > 0}"
+                                            class="rounded-full px-2.5 py-1 text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                                            th:text="${cat.productCount}">0</span>
+                                        <span th:if="${cat.productCount == 0}"
+                                            class="rounded-full px-2.5 py-1 text-xs font-semibold bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-300">0</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="flex justify-end gap-2">
+                                            <a th:href="@{/admin/categories/{id}/edit(id=${cat.id})}"
+                                                class="p-2 text-primary hover:bg-primary/10 dark:text-[#2ecc71] dark:hover:bg-[#1e5631]/20 rounded-lg transition-colors border border-transparent hover:border-primary/20"
+                                                title="Düzəliş et" aria-label="Kateqoriyanı redaktə et">
+                                                <svg class="h-4 w-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                </svg>
+                                            </a>
+                                            <!-- Məhsulu olan kateqoriyanın silmə düyməsi deaktivdir -->
+                                            <form th:if="${cat.productCount == 0}" method="post"
+                                                th:action="@{/admin/categories/{id}/delete(id=${cat.id})}"
+                                                onsubmit="return confirm('Bu kateqoriyanı silmək istədiyinizə əminsiniz?');">
+                                                <button type="submit"
+                                                    class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 rounded-lg transition-colors border border-transparent hover:border-red-100"
+                                                    title="Sil" aria-label="Kateqoriyanı sil">
+                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                            <span th:if="${cat.productCount > 0}"
+                                                class="p-2 text-gray-300 dark:text-gray-600 cursor-not-allowed"
+                                                title="Məhsulu olan kateqoriya silinə bilməz">
+                                                <svg class="h-4 w-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Script -->
+    <script th:src="@{/js/theme.js}" src="/js/theme.js"></script>
+</body>
+
+</html>

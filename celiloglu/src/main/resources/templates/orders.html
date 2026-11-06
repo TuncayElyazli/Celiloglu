@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="az" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cəliloğlu - Sifarişlərim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e5631',
+                        secondary: '#3b82f6',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* ========================================================
+           Sifarişlərim Cədvəli - Qlobal Tema Uyğunluğu (Dark & Light)
+           ======================================================== */
+
+        /* 1. Default (Tünd Karbon / Dark Theme) */
+        .orders-table-card {
+            background-color: #1e1e1e !important;
+            border: 1px solid #333333 !important;
+        }
+        .orders-table-card table thead {
+            background-color: #1e1e1e !important;
+            border-bottom: 1px solid #333333 !important;
+            color: #ffffff !important;
+        }
+        .orders-table-card table th {
+            border-color: #333333 !important;
+            color: #ffffff !important;
+        }
+        .orders-table-card table td {
+            border-color: #333333 !important;
+        }
+        .orders-table-card table tbody tr {
+            border-bottom: 1px solid #333333 !important;
+        }
+        .orders-table-card table tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.04) !important;
+        }
+
+        /* 2. Ağ Tema (.light-mode və html:not(.dark)) */
+        .light-mode .orders-table-card,
+        html:not(.dark) .orders-table-card {
+            background-color: #ffffff !important;
+            border: 1px solid #e0e0e0 !important;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+        }
+        .light-mode .orders-table-card table thead,
+        html:not(.dark) .orders-table-card table thead {
+            background-color: #f8f9fa !important;
+            border-bottom: 1px solid #e0e0e0 !important;
+            color: #333333 !important;
+        }
+        .light-mode .orders-table-card table th,
+        html:not(.dark) .orders-table-card table th {
+            border-color: #e0e0e0 !important;
+            color: #333333 !important;
+        }
+        .light-mode .orders-table-card table td,
+        html:not(.dark) .orders-table-card table td {
+            border-color: #e0e0e0 !important;
+            color: #333333 !important;
+        }
+        .light-mode .orders-table-card table tbody tr,
+        html:not(.dark) .orders-table-card table tbody tr {
+            border-bottom: 1px solid #e0e0e0 !important;
+        }
+        .light-mode .orders-table-card table tbody tr:hover,
+        html:not(.dark) .orders-table-card table tbody tr:hover {
+            background-color: #f8fafc !important;
+        }
+    </style>
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light-mode');
+        } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light-mode');
+        }
+    </script>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="/js/script.js" defer></script>
+</head>
+
+<body class="min-h-screen bg-[#fafafa] dark:bg-[#121212] text-gray-800 dark:text-[#e0e0e0] transition-colors duration-300 flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="bg-white dark:bg-[#121212] border-b border-gray-200 dark:border-[#333333] sticky top-0 z-50 shadow-sm dark:shadow-lg transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center">
+                    <a th:href="@{/}" href="/"
+                        class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary dark:text-[#e0e0e0] dark:!bg-none tracking-tight dark:hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-all duration-300">Cəliloğlu</a>
+                </div>
+
+                <!-- Search -->
+                <form method="get" th:action="@{/}" class="flex-1 max-w-2xl mx-8 hidden md:block">
+                    <div class="relative group">
+                        <button type="submit" class="absolute inset-y-0 left-0 pl-3 flex items-center bg-transparent border-none cursor-pointer">
+                            <svg class="h-5 w-5 text-gray-400 dark:text-gray-400 group-focus-within:text-primary dark:group-focus-within:text-white transition-colors"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </button>
+                        <input type="text" name="code"
+                            class="block w-full pl-10 pr-3 py-2.5 border border-gray-200 dark:border-[#333333] rounded-xl leading-5 bg-gray-50 dark:bg-[#1e1e1e] placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:bg-white dark:focus:bg-[#1e1e1e] transition-all sm:text-sm text-gray-800 dark:text-[#e0e0e0]"
+                            placeholder="Məhsulun kodu ilə axtarış...">
+                    </div>
+                </form>
+
+                <!-- Right icons -->
+                <div class="flex items-center space-x-6 sm:space-x-8">
+                    <!-- Rejim Toggle -->
+                    <button id="theme-toggle" type="button"
+                        class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white flex flex-col items-center transition-all duration-300 group dark:hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] focus:outline-none">
+                        <svg id="theme-toggle-dark-icon"
+                            class="hidden h-6 w-6 group-hover:scale-110 transition-transform" fill="currentColor"
+                            viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                        </svg>
+                        <svg id="theme-toggle-light-icon"
+                            class="hidden h-6 w-6 group-hover:scale-110 transition-transform" fill="currentColor"
+                            viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                                fill-rule="evenodd" clip-rule="evenodd"></path>
+                        </svg>
+                        <span class="text-[11px] font-medium mt-1">Rejim</span>
+                    </button>
+
+                    <!-- Sifarişlərim (Active) -->
+                    <a th:href="@{/orders}" href="/orders"
+                        class="text-primary dark:text-[#e0e0e0] flex flex-col items-center transition-all duration-300 group dark:hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">
+                        <div class="relative">
+                            <svg class="h-6 w-6 scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            </svg>
+                        </div>
+                        <span class="text-[11px] font-bold mt-1">Sifarişlərim</span>
+                    </a>
+
+                    <!-- Səbət -->
+                    <a th:href="@{/cart}" href="/cart"
+                        class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white flex flex-col items-center transition-all duration-300 group dark:hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">
+                        <div class="relative">
+                            <svg class="h-6 w-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 0a2 2 0 100 4 2 2 0 000-4z" />
+                            </svg>
+                            <span id="nav-cart-count"
+                                class="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white dark:border-[#121212]"
+                                th:text="${cartTotalItems != null ? cartTotalItems : 0}">0</span>
+                        </div>
+                        <span class="text-[11px] font-medium mt-1">Səbət</span>
+                    </a>
+
+                    <!-- Çıxış -->
+                    <form th:action="@{/logout}" method="post" class="inline-flex">
+                        <button type="submit"
+                            class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white flex flex-col items-center transition-all duration-300 group dark:hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] bg-transparent border-none p-0 cursor-pointer">
+                            <svg class="h-6 w-6 group-hover:scale-110 transition-transform" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            <span class="text-[11px] font-medium mt-1">Çıxış</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 w-full">
+        <div class="mb-8">
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Sifarişlərimin Statusu</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Şirkətinizə aid bütün cari və tamamlanmış sifarişlərin icra detalları.</p>
+        </div>
+
+        <!-- Flash Messages -->
+        <div th:if="${successMessage}"
+             class="mb-6 p-4 rounded-xl bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-300 text-sm flex items-center gap-3">
+            <svg class="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span th:text="${successMessage}">Uğurlu əməliyyat</span>
+        </div>
+
+        <div th:if="${errorMessage}"
+             class="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 text-sm flex items-center gap-3">
+            <svg class="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span th:text="${errorMessage}">Xəta baş verdi</span>
+        </div>
+
+        <!-- Orders Table Card -->
+        <div class="orders-table-card rounded-2xl overflow-hidden transition-all duration-300">
+            <!-- Empty state -->
+            <div th:if="${ordersPage == null or ordersPage.isEmpty()}" class="p-12 text-center">
+                <svg class="h-16 w-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-1">Hələ sifarişiniz yoxdur</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Səbətinizdəki məhsulları təsdiqləyərək ilk sifarişinizi verə bilərsiniz.</p>
+                <a th:href="@{/}" href="/" class="inline-flex items-center px-5 py-2.5 rounded-xl font-semibold text-white bg-primary hover:opacity-90 transition-all text-sm shadow">
+                    Məhsullara bax
+                </a>
+            </div>
+
+            <!-- Orders Table -->
+            <div th:if="${ordersPage != null and !ordersPage.isEmpty()}" class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="text-xs uppercase">
+                        <tr>
+                            <th scope="col" class="px-6 py-4 font-bold">Sifariş №</th>
+                            <th scope="col" class="px-6 py-4 font-bold">Tarix</th>
+                            <th scope="col" class="px-6 py-4 font-bold">Məhsullar</th>
+                            <th scope="col" class="px-6 py-4 font-bold">Məbləğ</th>
+                            <th scope="col" class="px-6 py-4 font-bold">Sifariş Statusu</th>
+                            <th scope="col" class="px-6 py-4 font-bold">Ödəniş Statusu</th>
+                            <th scope="col" class="px-6 py-4 font-bold text-right">Əməliyyat</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-[#333333]">
+                        <tr th:each="order : ${orders}" class="transition-colors">
+                            <td class="px-6 py-4 font-bold whitespace-nowrap">
+                                <a th:href="@{/orders/{id}(id=${order.id})}"
+                                   th:text="'#' + ${order.orderNumber}"
+                                   class="text-primary hover:text-primary/80 dark:text-[#2ecc71] dark:hover:text-[#2ecc71]/80 hover:underline">#ORD-00124</a>
+                            </td>
+                            <td class="px-6 py-4 text-gray-600 dark:text-gray-400 whitespace-nowrap"
+                                th:text="${order.orderDate != null ? #temporals.format(order.orderDate, 'dd.MM.yyyy HH:mm') : '-'}">24.09.2026 14:30</td>
+                            <td class="px-6 py-4 text-gray-700 dark:text-gray-300">
+                                <div th:if="${order.items != null and !order.items.isEmpty()}" class="space-y-1">
+                                    <div th:each="item : ${order.items}" class="text-sm">
+                                        <span class="font-medium text-gray-900 dark:text-white" th:text="${item.productName}">Əyləc diski</span>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400" th:text="'(' + ${item.quantity} + ' ədəd)'">(2 ədəd)</span>
+                                    </div>
+                                </div>
+                                <span th:unless="${order.items != null and !order.items.isEmpty()}" class="text-gray-400">-</span>
+                            </td>
+                            <td class="px-6 py-4 font-bold text-gray-900 dark:text-white whitespace-nowrap"
+                                th:text="${order.totalAmount != null ? #numbers.formatDecimal(order.totalAmount, 1, 2, 'POINT') + ' AZN' : '0.00 AZN'}">151.00 AZN</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span th:if="${order.status != null and order.status.name() == 'GÖZLƏYİR'}"
+                                      class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2.5 py-1 rounded-full border border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-700/50 uppercase tracking-wider"
+                                      th:text="${order.status.displayName}">Gözləyir</span>
+                                <span th:if="${order.status != null and order.status.name() == 'HAZIRLANIR'}"
+                                      class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded-full border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700/50 uppercase tracking-wider"
+                                      th:text="${order.status.displayName}">Hazırlanır</span>
+                                <span th:if="${order.status != null and order.status.name() == 'KARQOYA_VERİLDİ'}"
+                                      class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2.5 py-1 rounded-full border border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-400 dark:border-indigo-700/50 uppercase tracking-wider"
+                                      th:text="${order.status.displayName}">Karqoya verildi</span>
+                                <span th:if="${order.status != null and order.status.name() == 'ÇATDIRILDI'}"
+                                      class="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-1 rounded-full border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700/50 uppercase tracking-wider"
+                                      th:text="${order.status.displayName}">Çatdırıldı</span>
+                                <span th:if="${order.status != null and order.status.name() == 'LƏĞV_EDİLDİ'}"
+                                      class="bg-red-100 text-red-800 text-xs font-bold px-2.5 py-1 rounded-full border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-700/50 uppercase tracking-wider"
+                                      th:text="${order.status.displayName}">Ləğv edildi</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span th:if="${order.paymentStatus != null and order.paymentStatus.name() == 'TAM_ÖDƏNİLMİŞ'}"
+                                      class="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-1 rounded-full border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700/50 uppercase tracking-wider"
+                                      th:text="${order.paymentStatus.displayName}">Tam Ödənilmiş</span>
+                                <span th:if="${order.paymentStatus != null and order.paymentStatus.name() == 'QİSMƏN_ÖDƏNİLMİŞ'}"
+                                      class="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-1 rounded-full border border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700/50 uppercase tracking-wider"
+                                      th:text="${order.paymentStatus.displayName}">Qismən Ödənilmiş</span>
+                                <span th:if="${order.paymentStatus != null and order.paymentStatus.name() == 'ÖDƏNİŞ_GÖZLƏYİR'}"
+                                      class="bg-gray-100 text-gray-800 text-xs font-bold px-2.5 py-1 rounded-full border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 uppercase tracking-wider"
+                                      th:text="${order.paymentStatus.displayName}">Ödəniş Gözləyən</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <form th:if="${order.canCancel}" th:action="@{/orders/{id}/cancel(id=${order.id})}" method="post" class="inline">
+                                    <button type="submit"
+                                            onclick="return confirm('Sifarişi ləğv etmək istədiyinizdən əminsiniz?');"
+                                            class="inline-flex items-center px-3 py-1.5 border border-red-300 dark:border-red-700 text-xs font-semibold rounded-lg text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors cursor-pointer">
+                                        Ləğv et
+                                    </button>
+                                </form>
+                                <span th:unless="${order.canCancel}" class="text-xs text-gray-400 dark:text-gray-500">-</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div th:if="${ordersPage != null and ordersPage.totalPages > 1}"
+                 class="px-6 py-4 border-t border-gray-100 dark:border-[#333333] flex items-center justify-between">
+                <div class="text-xs text-gray-500 dark:text-gray-400">
+                    Səhifə <span class="font-semibold text-gray-800 dark:text-white" th:text="${ordersPage.number + 1}">1</span> /
+                    <span class="font-semibold text-gray-800 dark:text-white" th:text="${ordersPage.totalPages}">1</span>
+                    (Cəmi <span th:text="${ordersPage.totalElements}">0</span> sifariş)
+                </div>
+                <div class="flex items-center gap-2">
+                    <a th:if="${ordersPage.hasPrevious()}"
+                       th:href="@{/orders(page=${ordersPage.number - 1})}"
+                       class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-[#333333] dark:hover:bg-[#444444] text-gray-700 dark:text-[#e0e0e0] transition-colors">
+                        Əvvəlki
+                    </a>
+                    <span th:unless="${ordersPage.hasPrevious()}"
+                          class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed">
+                        Əvvəlki
+                    </span>
+
+                    <a th:if="${ordersPage.hasNext()}"
+                       th:href="@{/orders(page=${ordersPage.number + 1})}"
+                       class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-[#333333] dark:hover:bg-[#444444] text-gray-700 dark:text-[#e0e0e0] transition-colors">
+                        Növbəti
+                    </a>
+                    <span th:unless="${ordersPage.hasNext()}"
+                          class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed">
+                        Növbəti
+                    </span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer mt-auto py-12 px-4 sm:px-6 lg:px-8 border-t border-[#262626] bg-[#141414] text-[#cccccc] transition-colors duration-300">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 pb-8">
+                <!-- 1-ci Sütun: Haqqımızda -->
+                <div class="space-y-4">
+                    <a th:href="@{/}" href="/" class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary dark:text-white dark:!bg-none tracking-tight inline-block footer-title">
+                        Cəliloğlu
+                    </a>
+                    <p class="text-sm leading-relaxed footer-text">
+                        Tərəfdaş şirkətlər üçün avtomobil ehtiyat hissələri kataloqu və sifariş platforması.
+                    </p>
+                </div>
+
+                <!-- 2-ci Sütun: Faydalı Linklər -->
+                <div class="space-y-4">
+                    <h4 class="text-base font-bold text-white uppercase tracking-wider footer-title">Faydalı Linklər</h4>
+                    <ul class="space-y-2.5 text-sm">
+                        <li>
+                            <a th:href="@{/}" href="/" class="footer-link hover:text-[#2ecc71] transition-colors">Ana səhifə</a>
+                        </li>
+                        <li>
+                            <a th:href="@{/about}" href="/about" class="footer-link hover:text-[#2ecc71] transition-colors">Haqqımızda</a>
+                        </li>
+                        <li>
+                            <a th:href="@{/terms}" href="/terms" class="footer-link hover:text-[#2ecc71] transition-colors">Qaydalar və Şərtlər</a>
+                        </li>
+                        <li>
+                            <a th:href="@{/privacy}" href="/privacy" class="footer-link hover:text-[#2ecc71] transition-colors">Məxfilik Siyasəti</a>
+                        </li>
+                        <li>
+                            <a th:href="@{/terms.html#catdirilma-qaytarma}" href="/terms.html#catdirilma-qaytarma" class="footer-link hover:text-[#2ecc71] transition-colors">Çatdırılma və Qaytarma</a>
+                        </li>
+                        <li>
+                            <a th:href="@{/faq}" href="/faq" class="footer-link hover:text-[#2ecc71] transition-colors">Tez-tez Verilən Suallar (FAQ)</a>
+                        </li>
+                        <li>
+                            <a th:href="@{/cooperation}" href="/cooperation" class="footer-link hover:text-[#2ecc71] transition-colors">Bizimlə əlaqə</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 3-cü Sütun: Əlaqə -->
+                <div class="space-y-4">
+                    <h4 class="text-base font-bold text-white uppercase tracking-wider footer-title">Əlaqə</h4>
+                    <ul class="space-y-2.5 text-sm">
+                        <li>
+                            <a href="tel:+994553334343" class="flex items-center gap-2 footer-link hover:text-[#2ecc71] transition-colors">
+                                <svg class="h-4 w-4 text-[#2ecc71] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                </svg>
+                                <span>+994 55 333 43 43</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=tuncayelyazl%40gmail.com" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 footer-link hover:text-[#2ecc71] transition-colors">
+                                <svg class="h-4 w-4 text-[#2ecc71] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                                <span>tuncayelyazl@gmail.com</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.google.com/maps/search/?api=1&amp;query=Celiloglu%20Ehtiyat%20Hisseleri" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 footer-link hover:text-[#2ecc71] transition-colors">
+                                <svg class="h-4 w-4 text-[#2ecc71] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span>Cəliloğlu Ehtiyat Hissələri</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Alt Xətt və Müəllif Hüququ -->
+            <div class="border-t border-[#262626] pt-6 mt-4 text-center footer-divider">
+                <p class="text-xs text-[#999999] footer-bottom-text">
+                    &copy; 2026 Cəliloğlu. Bütün hüquqlar qorunur.
+                </p>
+            </div>
+        </div>
+    </footer>
+    <script src="/js/theme.js"></script>
+</body>
+
+</html>

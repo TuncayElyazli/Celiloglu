@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="az" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'Cəliloğlu Admin - Sifariş #' + ${order.orderNumber}">Cəliloğlu Admin - Sifariş Detalları</title>
+    <meta name="description" content="Cəliloğlu Admin Panel - Sifariş Detalları">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e5631',
+                        secondary: '#3b82f6',
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light-mode');
+        } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light-mode');
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="/css/style.css">
+    <script th:src="@{/js/script.js}" src="/js/script.js" defer></script>
+</head>
+
+<body class="flex h-screen overflow-hidden text-gray-800 dark:text-[#e0e0e0] bg-gray-50 dark:bg-[#121212] transition-colors">
+
+    <!-- Sidebar Fragment -->
+    <aside th:replace="~{fragments/admin-sidebar :: sidebar('orders')}"></aside>
+
+    <!-- Main Wrapper -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50 dark:bg-[#121212] transition-colors">
+
+        <!-- Top Header -->
+        <header class="h-20 bg-white dark:bg-[#121212] border-b border-gray-200 dark:border-[#333333] flex items-center justify-between px-8 flex-shrink-0 z-10 transition-colors duration-300 shadow-sm dark:shadow-lg">
+            <div class="flex items-center gap-4">
+                <a th:href="@{/admin/orders}" href="/admin/orders"
+                   class="inline-flex items-center gap-1.5 text-sm font-semibold text-primary dark:text-[#2ecc71] hover:underline transition-colors">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Sifarişlərə qayıt
+                </a>
+            </div>
+            <div class="flex items-center gap-6">
+
+                <!-- Theme Toggle -->
+                <button id="theme-toggle" type="button"
+                    class="text-gray-500 dark:text-indigo-100 hover:text-primary dark:hover:text-white flex flex-col items-center transition-all duration-300 group dark:hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] focus:outline-none">
+                    <svg id="theme-toggle-dark-icon" class="hidden h-6 w-6 group-hover:scale-110 transition-transform"
+                        fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                    </svg>
+                    <svg id="theme-toggle-light-icon" class="hidden h-6 w-6 group-hover:scale-110 transition-transform"
+                        fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                            fill-rule="evenodd" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="text-[11px] font-medium mt-1">Rejim</span>
+                </button>
+
+                <!-- Profile Block Fragment -->
+                <div th:replace="~{fragments/admin-header :: profile}"></div>
+            </div>
+        </header>
+
+        <!-- Scrollable Content -->
+        <main class="flex-1 overflow-y-auto p-8">
+            <div class="max-w-7xl mx-auto space-y-8">
+
+                <!-- Header Section -->
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                            Sifariş <span class="text-primary dark:text-[#2ecc71]" th:text="'#' + ${order.orderNumber}">#ORD-00124</span>
+                        </h2>
+                        <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            Sifariş tarixi: <span class="font-medium text-gray-700 dark:text-gray-300"
+                                                 th:text="${order.orderDate != null ? #temporals.format(order.orderDate, 'dd.MM.yyyy HH:mm') : '-'}">24.09.2026 14:30</span>
+                        </p>
+                    </div>
+
+                    <!-- Badges -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <!-- Sifariş Statusu -->
+                        <span th:if="${order.status != null and order.status.name() == 'GÖZLƏYİR'}"
+                              class="bg-yellow-100 text-yellow-800 text-xs font-bold px-3 py-1.5 rounded-full border border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-700/50 uppercase tracking-wider"
+                              th:text="${order.status.displayName}">Gözləyir</span>
+                        <span th:if="${order.status != null and order.status.name() == 'HAZIRLANIR'}"
+                              class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1.5 rounded-full border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700/50 uppercase tracking-wider"
+                              th:text="${order.status.displayName}">Hazırlanır</span>
+                        <span th:if="${order.status != null and order.status.name() == 'KARQOYA_VERİLDİ'}"
+                              class="bg-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1.5 rounded-full border border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-400 dark:border-indigo-700/50 uppercase tracking-wider"
+                              th:text="${order.status.displayName}">Karqoya verildi</span>
+                        <span th:if="${order.status != null and order.status.name() == 'ÇATDIRILDI'}"
+                              class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1.5 rounded-full border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700/50 uppercase tracking-wider"
+                              th:text="${order.status.displayName}">Çatdırıldı</span>
+                        <span th:if="${order.status != null and order.status.name() == 'LƏĞV_EDİLDİ'}"
+                              class="bg-red-100 text-red-800 text-xs font-bold px-3 py-1.5 rounded-full border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-700/50 uppercase tracking-wider"
+                              th:text="${order.status.displayName}">Ləğv edildi</span>
+
+                        <!-- Ödəniş Statusu -->
+                        <th:block th:if="${!isWarehouse}">
+                            <span th:if="${order.paymentStatus != null and order.paymentStatus.name() == 'TAM_ÖDƏNİLMİŞ'}"
+                                  class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1.5 rounded-full border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700/50 uppercase tracking-wider"
+                                  th:text="${order.paymentStatus.displayName}">Tam Ödənilmiş</span>
+                            <span th:if="${order.paymentStatus != null and order.paymentStatus.name() == 'QİSMƏN_ÖDƏNİLMİŞ'}"
+                                  class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1.5 rounded-full border border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700/50 uppercase tracking-wider"
+                                  th:text="${order.paymentStatus.displayName}">Qismən Ödənilmiş</span>
+                            <span th:if="${order.paymentStatus != null and order.paymentStatus.name() == 'ÖDƏNİŞ_GÖZLƏYİR'}"
+                                  class="bg-gray-100 text-gray-800 text-xs font-bold px-3 py-1.5 rounded-full border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 uppercase tracking-wider"
+                                  th:text="${order.paymentStatus.displayName}">Ödəniş Gözləyən</span>
+                        </th:block>
+
+                        <!-- Admin / Anbar Status Dəyişmə Forması -->
+                        <form th:if="${(isAdmin or isSuperAdmin) and order.status != null and order.status.name() == 'GÖZLƏYİR'}"
+                              th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post" class="inline">
+                            <input type="hidden" name="targetStatus" value="HAZIRLANIR" />
+                            <button type="submit"
+                                    class="inline-flex items-center px-4 py-1.5 border border-transparent text-xs font-bold rounded-full text-white bg-primary hover:bg-opacity-90 dark:hover:drop-shadow-[0_0_10px_rgba(30,86,49,0.8)] transition-all shadow-sm cursor-pointer">
+                                Təsdiqlə
+                            </button>
+                        </form>
+
+                        <form th:if="${canChangeOrderStatus and order.status != null and order.status.name() == 'HAZIRLANIR'}"
+                              th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post" class="inline">
+                            <input type="hidden" name="targetStatus" value="KARQOYA_VERİLDİ" />
+                            <button type="submit"
+                                    class="inline-flex items-center px-4 py-1.5 border border-transparent text-xs font-bold rounded-full text-white bg-indigo-600 hover:bg-indigo-700 transition-all shadow-sm cursor-pointer">
+                                Karqoya ver
+                            </button>
+                        </form>
+
+                        <form th:if="${(isAdmin or isSuperAdmin) and order.status != null and order.status.name() == 'KARQOYA_VERİLDİ'}"
+                              th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post" class="inline">
+                            <input type="hidden" name="targetStatus" value="ÇATDIRILDI" />
+                            <button type="submit"
+                                    class="inline-flex items-center px-4 py-1.5 border border-transparent text-xs font-bold rounded-full text-white bg-green-600 hover:bg-green-700 transition-all shadow-sm cursor-pointer">
+                                Çatdırıldı kimi qeyd et
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Flash Messages -->
+                <div th:if="${successMessage}"
+                     class="p-4 rounded-xl bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-300 text-sm flex items-center gap-3">
+                    <svg class="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span th:text="${successMessage}">Uğurlu əməliyyat</span>
+                </div>
+
+                <div th:if="${errorMessage}"
+                     class="p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 text-sm flex items-center gap-3">
+                    <svg class="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span th:text="${errorMessage}">Xəta baş verdi</span>
+                </div>
+
+                <!-- Info Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Card 1: Müştəri Məlumatları -->
+                    <div class="bg-white dark:bg-[#1e1e1e] rounded-2xl border border-gray-100 dark:border-[#333333] shadow-sm p-6 transition-colors">
+                        <h3 class="text-base font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                            <svg class="h-5 w-5 text-primary dark:text-[#2ecc71]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            Müştəri Məlumatları
+                        </h3>
+                        <dl class="space-y-3 text-sm">
+                            <div class="flex justify-between items-center py-1.5 border-b border-gray-100 dark:border-[#333333]">
+                                <dt class="text-gray-500 dark:text-gray-400">Ad / Soyad:</dt>
+                                <dd class="font-semibold text-gray-900 dark:text-white"
+                                    th:text="${order.customerFullName != null ? order.customerFullName : '-'}">-</dd>
+                            </div>
+                            <div class="flex justify-between items-center py-1.5 border-b border-gray-100 dark:border-[#333333]">
+                                <dt class="text-gray-500 dark:text-gray-400">İstifadəçi adı:</dt>
+                                <dd class="font-mono text-xs sm:text-sm text-gray-900 dark:text-white"
+                                    th:text="${order.customerUsername != null ? order.customerUsername : '-'}">-</dd>
+                            </div>
+                            <div class="flex justify-between items-center py-1.5 border-b border-gray-100 dark:border-[#333333]">
+                                <dt class="text-gray-500 dark:text-gray-400">E-poçt:</dt>
+                                <dd class="font-medium text-gray-900 dark:text-white"
+                                    th:text="${order.customerEmail != null ? order.customerEmail : '-'}">-</dd>
+                            </div>
+                            <div class="flex justify-between items-center py-1.5 border-b border-gray-100 dark:border-[#333333]">
+                                <dt class="text-gray-500 dark:text-gray-400">Telefon:</dt>
+                                <dd class="font-medium text-gray-900 dark:text-white"
+                                    th:text="${order.customerPhone != null ? order.customerPhone : '-'}">-</dd>
+                            </div>
+                            <div class="flex justify-between items-center py-1.5 border-b border-gray-100 dark:border-[#333333]">
+                                <dt class="text-gray-500 dark:text-gray-400">Şirkət Adı:</dt>
+                                <dd class="font-semibold text-primary dark:text-[#2ecc71]"
+                                    th:text="${order.customerCompanyName != null and !#strings.isEmpty(order.customerCompanyName) ? order.customerCompanyName : '-'}">-</dd>
+                            </div>
+                            <div class="flex justify-between items-center py-1.5">
+                                <dt class="text-gray-500 dark:text-gray-400">VÖEN:</dt>
+                                <dd class="font-mono text-xs sm:text-sm text-gray-900 dark:text-white"
+                                    th:text="${order.customerTin != null and !#strings.isEmpty(order.customerTin) ? order.customerTin : '-'}">-</dd>
+                            </div>
+                        </dl>
+                    </div>
+
+                    <!-- Card 2: Sifariş və Çatdırılma Detalları -->
+                    <div class="bg-white dark:bg-[#1e1e1e] rounded-2xl border border-gray-100 dark:border-[#333333] shadow-sm p-6 transition-colors">
+                        <h3 class="text-base font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                            <svg class="h-5 w-5 text-primary dark:text-[#2ecc71]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            Sifariş və Çatdırılma Detalları
+                        </h3>
+                        <dl class="space-y-3 text-sm">
+                            <div th:if="${!isWarehouse}" class="flex justify-between items-center py-1.5 border-b border-gray-100 dark:border-[#333333]">
+                                <dt class="text-gray-500 dark:text-gray-400">Ödəniş Üsulu:</dt>
+                                <dd class="font-semibold text-gray-900 dark:text-white"
+                                    th:text="${order.paymentMethod != null ? order.paymentMethod.displayName : '-'}">-</dd>
+                            </div>
+                            <div class="flex justify-between items-center py-1.5 border-b border-gray-100 dark:border-[#333333]">
+                                <dt class="text-gray-500 dark:text-gray-400">İzləmə Nömrəsi:</dt>
+                                <dd class="font-mono text-xs sm:text-sm text-gray-900 dark:text-white"
+                                    th:text="${order.trackingNumber != null and !#strings.isEmpty(order.trackingNumber) ? order.trackingNumber : '-'}">-</dd>
+                            </div>
+                            <div class="py-1.5 border-b border-gray-100 dark:border-[#333333]">
+                                <dt class="text-gray-500 dark:text-gray-400 text-xs mb-1">Çatdırılma Ünvanı:</dt>
+                                <dd class="font-medium text-gray-900 dark:text-white break-words"
+                                    th:text="${order.shippingAddress != null and !#strings.isEmpty(order.shippingAddress) ? order.shippingAddress : '-'}">-</dd>
+                            </div>
+                            <div class="py-1.5">
+                                <dt class="text-gray-500 dark:text-gray-400 text-xs mb-1">Sifariş Qeydləri:</dt>
+                                <dd class="font-medium text-gray-900 dark:text-white break-words"
+                                    th:text="${order.orderNotes != null and !#strings.isEmpty(order.orderNotes) ? order.orderNotes : '-'}">-</dd>
+                            </div>
+                        </dl>
+                    </div>
+                </div>
+
+                <!-- Card 2.5: Kassa və Ödəniş İcmalı -->
+                <div th:if="${!isWarehouse}" class="bg-white dark:bg-[#1e1e1e] rounded-2xl border border-gray-100 dark:border-[#333333] shadow-sm p-6 transition-colors">
+                    <div class="flex items-center justify-between mb-4 border-b border-gray-100 dark:border-[#333333] pb-3">
+                        <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <svg class="h-5 w-5 text-primary dark:text-[#2ecc71]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            Kassa və Ödəniş Vəziyyəti
+                        </h3>
+                        <span th:if="${remainingAmount == null or remainingAmount == 0}"
+                              class="text-xs font-bold text-green-700 bg-green-100 dark:bg-green-900/30 dark:text-green-400 px-3 py-1 rounded-full border border-green-200 dark:border-green-800">
+                            Borc Yoxdur (Tam Ödənilib)
+                        </span>
+                        <span th:if="${remainingAmount != null and remainingAmount > 0 and order.status != null and order.status.name() != 'LƏĞV_EDİLDİ'}"
+                              class="text-xs font-bold text-amber-700 bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400 px-3 py-1 rounded-full border border-amber-200 dark:border-amber-800">
+                            Qalıq Borc Mövcuddur
+                        </span>
+                        <span th:if="${order.status != null and order.status.name() == 'LƏĞV_EDİLDİ'}"
+                              class="text-xs font-bold text-red-700 bg-red-100 dark:bg-red-900/30 dark:text-red-400 px-3 py-1 rounded-full border border-red-200 dark:border-red-800">
+                            Sifariş Ləğv Edilib (Ödəniş Qapalıdır)
+                        </span>
+                    </div>
+
+                    <!-- 3 Financial Indicators -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                        <div class="p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-[#333333]">
+                            <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 block mb-1">Sifarişin Məbləği</span>
+                            <span class="text-lg font-bold text-gray-900 dark:text-white"
+                                  th:text="${order.totalAmount != null ? #numbers.formatDecimal(order.totalAmount, 1, 2, 'POINT') + ' AZN' : '0.00 AZN'}">0.00 AZN</span>
+                        </div>
+                        <div class="p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-[#333333]">
+                            <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 block mb-1">Faktiki Ödənilmiş Məbləğ</span>
+                            <span class="text-lg font-bold text-primary dark:text-[#2ecc71]"
+                                  th:text="${paidAmount != null ? #numbers.formatDecimal(paidAmount, 1, 2, 'POINT') + ' AZN' : '0.00 AZN'}">0.00 AZN</span>
+                        </div>
+                        <div class="p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-[#333333]">
+                            <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 block mb-1">Qalıq Borc</span>
+                            <span class="text-lg font-bold text-red-600 dark:text-red-400"
+                                  th:text="${remainingAmount != null ? #numbers.formatDecimal(remainingAmount, 1, 2, 'POINT') + ' AZN' : '0.00 AZN'}">0.00 AZN</span>
+                        </div>
+                    </div>
+
+                    <!-- New Payment Form (Only when remaining debt > 0 and not cancelled) -->
+                    <div th:if="${order.status != null and order.status.name() != 'LƏĞV_EDİLDİ' and remainingAmount != null and remainingAmount > 0}"
+                         class="mb-6 p-5 rounded-xl bg-gray-50/80 dark:bg-white/5 border border-gray-200 dark:border-[#333333]">
+                        <h4 class="text-sm font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                            <span>Yeni Ödəniş Daxil Et</span>
+                        </h4>
+                        <form th:action="@{/admin/orders/{id}/payments(id=${order.id})}" method="post" class="space-y-4">
+                            <input type="hidden" name="receiptNumber" th:value="${receiptNumber}" />
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Qəbz №</label>
+                                    <input type="text" th:value="${receiptNumber}" disabled
+                                           class="w-full text-xs font-mono font-bold bg-gray-100 dark:bg-black/30 border border-gray-200 dark:border-[#333333] rounded-lg px-3 py-2 text-gray-600 dark:text-gray-400 cursor-not-allowed" />
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Ödənilən Məbləğ (AZN) <span class="text-red-500">*</span></label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="number" id="payment-amount-input" name="amount" step="0.01" min="0.01" th:max="${remainingAmount}"
+                                               th:value="${enteredAmount != null ? enteredAmount : ''}" required
+                                               placeholder="Faktiki alınan məbləği yazın"
+                                               class="flex-1 min-w-0 text-sm font-bold bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333333] rounded-lg px-3 py-2 text-gray-900 dark:text-white focus:ring-primary focus:border-primary placeholder-gray-400 dark:placeholder-gray-500 placeholder:text-xs placeholder:font-normal" />
+                                        <button type="button"
+                                                id="btn-fill-remaining"
+                                                th:attr="data-remaining-amount=${remainingAmount != null ? #numbers.formatDecimal(remainingAmount, 1, 2, 'POINT') : '0.00'}"
+                                                onclick="fillRemainingAmount(this)"
+                                                class="h-[38px] flex items-center justify-center whitespace-nowrap px-3 text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/20 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-[#333333] rounded-lg transition-colors cursor-pointer flex-shrink-0"
+                                                title="Qalıq borc məbləğini sahəyə yaz">
+                                            Qalıq məbləği doldur
+                                        </button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                                        Ödəniş Üsulu <span class="text-red-500">*</span>
+                                    </label>
+
+                                    <!-- Custom Payment Method Dropdown Wrapper -->
+                                    <div class="custom-dropdown-wrapper relative w-full">
+                                        <!-- Native select (Source of truth & No-JS fallback) -->
+                                        <select name="paymentMethod" required
+                                                class="custom-dropdown-native w-full text-sm bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333333] rounded-lg px-3 py-2 text-gray-900 dark:text-white focus:ring-primary focus:border-primary">
+                                            <option value="NAĞD" th:selected="${enteredPaymentMethod == null or enteredPaymentMethod == 'NAĞD'}">Kassa / Nağd qəbz</option>
+                                            <option value="BANK_KÖÇÜRMƏSİ" th:selected="${enteredPaymentMethod == 'BANK_KÖÇÜRMƏSİ'}">Bank köçürməsi</option>
+                                        </select>
+
+                                        <!-- Custom Trigger Button (Hidden by default, shown by JS) -->
+                                        <button type="button"
+                                                class="custom-dropdown-trigger hidden w-full flex items-center justify-between gap-2 px-3 py-2 text-sm font-medium rounded-lg bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333333] text-gray-900 dark:text-white shadow-sm hover:border-gray-300 dark:hover:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-[#2ecc71] transition-all cursor-pointer"
+                                                aria-haspopup="listbox"
+                                                aria-expanded="false"
+                                                aria-label="Ödəniş üsulunu seçin">
+                                            <span class="custom-dropdown-label truncate font-medium text-gray-900 dark:text-white">
+                                                <span th:text="${enteredPaymentMethod == 'BANK_KÖÇÜRMƏSİ' ? 'Bank köçürməsi' : 'Kassa / Nağd qəbz'}">Kassa / Nağd qəbz</span>
+                                            </span>
+                                            <!-- Rotating Chevron Icon -->
+                                            <svg class="custom-dropdown-chevron w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform duration-200 flex-shrink-0"
+                                                 fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+
+                                        <!-- Custom Dropdown Panel -->
+                                        <div class="custom-dropdown-menu hidden absolute left-0 right-0 mt-1.5 w-full bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333333] rounded-xl shadow-xl z-50 p-1.5 space-y-0.5 focus:outline-none transition-all"
+                                             role="listbox"
+                                             tabindex="-1">
+                                            <!-- NAĞD -->
+                                            <div class="custom-dropdown-option flex items-center justify-between px-3 py-2.5 text-xs sm:text-sm rounded-lg text-gray-700 dark:text-[#e0e0e0] hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white focus:bg-gray-100 dark:focus:bg-white/10 focus:text-gray-900 dark:focus:text-white cursor-pointer transition-colors focus:outline-none"
+                                                 role="option"
+                                                 data-value="NAĞD"
+                                                 tabindex="-1"
+                                                 th:aria-selected="${enteredPaymentMethod == null or enteredPaymentMethod == 'NAĞD' ? 'true' : 'false'}">
+                                                <div class="flex flex-col text-left">
+                                                    <span class="custom-dropdown-opt-title font-semibold text-gray-900 dark:text-white">Kassa / Nağd qəbz</span>
+                                                </div>
+                                                <svg class="custom-dropdown-check-icon hidden w-4 h-4 text-emerald-600 dark:text-[#2ecc71] flex-shrink-0"
+                                                     fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </div>
+
+                                            <!-- BANK_KÖÇÜRMƏSİ -->
+                                            <div class="custom-dropdown-option flex items-center justify-between px-3 py-2.5 text-xs sm:text-sm rounded-lg text-gray-700 dark:text-[#e0e0e0] hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white focus:bg-gray-100 dark:focus:bg-white/10 focus:text-gray-900 dark:focus:text-white cursor-pointer transition-colors focus:outline-none"
+                                                 role="option"
+                                                 data-value="BANK_KÖÇÜRMƏSİ"
+                                                 tabindex="-1"
+                                                 th:aria-selected="${enteredPaymentMethod == 'BANK_KÖÇÜRMƏSİ' ? 'true' : 'false'}">
+                                                <div class="flex flex-col text-left">
+                                                    <span class="custom-dropdown-opt-title font-semibold text-gray-900 dark:text-white">Bank köçürməsi</span>
+                                                </div>
+                                                <svg class="custom-dropdown-check-icon hidden w-4 h-4 text-emerald-600 dark:text-[#2ecc71] flex-shrink-0"
+                                                     fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Qeyd (Könüllü)</label>
+                                <input type="text" name="notes" maxlength="255" th:value="${enteredNotes}"
+                                       placeholder="Məs: Bank çıxarışı № və ya kassa mədaxil qəbzi..."
+                                       class="w-full text-sm bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333333] rounded-lg px-3 py-2 text-gray-900 dark:text-white focus:ring-primary focus:border-primary placeholder-gray-400" />
+                            </div>
+
+                            <div class="flex justify-end">
+                                <button type="submit"
+                                        class="px-5 py-2.5 bg-primary hover:bg-opacity-90 text-white text-xs font-bold rounded-xl shadow-sm transition-all cursor-pointer">
+                                    Ödənişi Qeydə Al
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Payment History Table -->
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Sifarişin Ödəniş Tarixçəsi</h4>
+                        <div class="overflow-x-auto rounded-xl border border-gray-100 dark:border-[#333333]">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-gray-50/80 dark:bg-white/5 border-b border-gray-100 dark:border-[#333333] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        <th class="px-4 py-3">Qəbz №</th>
+                                        <th class="px-4 py-3">Tarix</th>
+                                        <th class="px-4 py-3 text-right">Məbləğ</th>
+                                        <th class="px-4 py-3">Üsul</th>
+                                        <th class="px-4 py-3">Qəbz statusu</th>
+                                        <th class="px-4 py-3">Qeydiyyatçı</th>
+                                        <th class="px-4 py-3">Qeyd</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 dark:divide-[#333333]">
+                                    <tr th:each="p : ${payments}" class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                        <td class="px-4 py-3 font-mono font-bold text-gray-900 dark:text-white" th:text="${p.receiptNumber}">RCP-001</td>
+                                        <td class="px-4 py-3 text-gray-500 dark:text-gray-400" th:text="${p.paymentDate != null ? #temporals.format(p.paymentDate, 'dd.MM.yyyy HH:mm') : '-'}">01.01.2026</td>
+                                        <td class="px-4 py-3 text-right font-extrabold text-[#1e5631] dark:text-[#2ecc71]" th:text="${p.amount != null ? #numbers.formatDecimal(p.amount, 1, 2, 'POINT') + ' AZN' : '0.00 AZN'}">100.00 AZN</td>
+                                        <td class="px-4 py-3">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300"
+                                                  th:text="${p.paymentMethod != null ? p.paymentMethod.displayName : '-'}">Nağd</span>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <span th:if="${p.status != null and p.status.name() == 'TAM_ÖDƏNİLMİŞ'}"
+                                                  class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                                Təsdiqlənib
+                                            </span>
+                                            <span th:if="${p.status != null and p.status.name() == 'QİSMƏN_ÖDƏNİLMİŞ'}"
+                                                  class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
+                                                  th:text="${p.status.displayName}">
+                                                Qismən Ödənilmiş
+                                            </span>
+                                            <span th:if="${p.status != null and p.status.name() == 'ÖDƏNİŞ_GÖZLƏYİR'}"
+                                                  class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+                                                  th:text="${p.status.displayName}">
+                                                Ödəniş Gözləyən
+                                            </span>
+                                            <span th:if="${p.status == null}" class="text-gray-400">-</span>
+                                        </td>
+                                        <td class="px-4 py-3 font-mono text-gray-600 dark:text-gray-300" th:text="${p.recordedBy != null ? p.recordedBy : '-'}">admin</td>
+                                        <td class="px-4 py-3 text-gray-500 dark:text-gray-400 max-w-xs truncate" th:text="${p.notes != null ? p.notes : '-'}">-</td>
+                                    </tr>
+                                    <tr th:if="${payments == null or payments.isEmpty()}">
+                                        <td colspan="7" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+                                            Bu sifariş üzrə hələ heç bir rəsmi ödəniş qeydə alınmayıb.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Sifarişdəki Məhsullar Cədvəli -->
+                <div class="bg-white dark:bg-[#1e1e1e] rounded-2xl border border-gray-100 dark:border-[#333333] shadow-sm overflow-hidden transition-colors">
+                    <div class="px-6 py-4 border-b border-gray-100 dark:border-[#333333] flex items-center justify-between">
+                        <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <svg class="h-5 w-5 text-primary dark:text-[#2ecc71]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                            Sifarişdəki Məhsullar
+                        </h3>
+                        <span class="text-xs text-gray-500 dark:text-gray-400"
+                              th:text="|Cəmi: ${order.totalItems != null ? order.totalItems : 0} ədəd|">Cəmi: 0 ədəd</span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead>
+                                <tr class="bg-gray-50/80 dark:bg-white/5 border-b border-gray-100 dark:border-[#333333] text-xs font-semibold text-gray-500 dark:text-[#e0e0e0] uppercase tracking-wider transition-colors">
+                                    <th scope="col" class="px-6 py-4">Məhsul</th>
+                                    <th scope="col" class="px-6 py-4">Kod</th>
+                                    <th scope="col" class="px-6 py-4 text-center">Cari Stok</th>
+                                    <th scope="col" class="px-6 py-4 text-center">Miqdar</th>
+                                    <th scope="col" class="px-6 py-4 text-right" th:if="${!isWarehouse}">Satınalma Qiyməti</th>
+                                    <th scope="col" class="px-6 py-4 text-right" th:if="${!isWarehouse}">Cəm</th>
+                                    <th scope="col" class="px-6 py-4 text-center" th:if="${isWarehouse or isAdmin or isSuperAdmin}">Stok İdarəetməsi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-[#333333]">
+                                <tr th:each="item : ${order.items}" class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                    <!-- Şəkil və Ad -->
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-12 h-12 rounded-xl bg-gray-100 dark:bg-white/5 flex-shrink-0 flex items-center justify-center overflow-hidden border border-gray-200 dark:border-[#333333]">
+                                                <img th:if="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}"
+                                                     th:src="${item.imageUrl}"
+                                                     th:alt="${item.productName}"
+                                                     class="w-full h-full object-cover">
+                                                <div th:unless="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}"
+                                                     class="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-500">
+                                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                            <div class="min-w-0 flex-1">
+                                                <span class="font-bold text-gray-900 dark:text-white"
+                                                      th:text="${item.productName != null ? item.productName : 'Məhsul'}">Məhsul adı</span>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <!-- Kod -->
+                                    <td class="px-6 py-4 whitespace-nowrap font-mono text-xs sm:text-sm text-gray-600 dark:text-gray-400"
+                                        th:text="${item.productCode != null and !#strings.isEmpty(item.productCode) ? item.productCode : '-'}">
+                                        PRD-001
+                                    </td>
+
+                                    <!-- Cari Stok -->
+                                    <td class="px-6 py-4 whitespace-nowrap text-center font-mono text-xs sm:text-sm text-gray-700 dark:text-gray-300">
+                                        <span class="font-bold" th:text="${item.currentStock != null ? item.currentStock : 0}">0</span> ədəd
+                                    </td>
+
+                                    <!-- Miqdar -->
+                                    <td class="px-6 py-4 whitespace-nowrap text-center font-medium text-gray-800 dark:text-gray-200"
+                                        th:text="|${item.quantity != null ? item.quantity : 0} ədəd|">
+                                        1 ədəd
+                                    </td>
+
+                                    <!-- Satınalma Qiyməti -->
+                                    <td th:if="${!isWarehouse}" class="px-6 py-4 whitespace-nowrap text-right text-gray-600 dark:text-gray-400"
+                                        th:text="${item.priceAtPurchase != null ? #numbers.formatDecimal(item.priceAtPurchase, 1, 2, 'POINT') + ' AZN' : '0.00 AZN'}">
+                                        45.00 AZN
+                                    </td>
+
+                                    <!-- Cəm -->
+                                    <td th:if="${!isWarehouse}" class="px-6 py-4 whitespace-nowrap text-right font-bold text-gray-900 dark:text-white"
+                                        th:text="${item.subtotal != null ? #numbers.formatDecimal(item.subtotal, 1, 2, 'POINT') + ' AZN' : '0.00 AZN'}">
+                                        45.00 AZN
+                                    </td>
+
+                                    <!-- Stok İdarəetməsi Forması -->
+                                    <td th:if="${isWarehouse or isAdmin or isSuperAdmin}" class="px-6 py-4 whitespace-nowrap text-center">
+                                        <form th:action="@{/admin/products/{id}/stock(id=${item.productId})}" method="post" class="inline-flex items-center gap-1.5">
+                                            <input type="hidden" name="expectedStock" th:value="${item.currentStock != null ? item.currentStock : 0}" />
+                                            <input type="hidden" name="redirectUrl" th:value="@{/admin/orders/{id}(id=${order.id})}" />
+                                            <input type="number" name="stockQuantity" min="0" th:value="${item.currentStock != null ? item.currentStock : 0}"
+                                                   class="w-20 px-2 py-1 text-xs font-bold text-center border border-gray-200 dark:border-[#333333] rounded-lg bg-white dark:bg-[#121212] text-gray-900 dark:text-white focus:ring-primary focus:border-primary no-spinner" />
+                                            <button type="submit"
+                                                    class="px-2.5 py-1 text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/20 text-gray-800 dark:text-gray-200 rounded-lg transition-colors cursor-pointer"
+                                                    title="Stoku yenilə">
+                                                Saxla
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <tr th:if="${order.items == null or order.items.isEmpty()}">
+                                    <td colspan="7" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                                        Sifarişdə məhsul tapılmadı.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Summary Footer -->
+                    <div class="px-6 py-5 bg-gray-50 dark:bg-black/20 border-t border-gray-100 dark:border-[#333333] flex flex-col sm:flex-row items-end sm:items-center justify-between gap-4">
+                        <div th:if="${!isWarehouse}" class="text-xs text-gray-500 dark:text-gray-400">
+                            Bütün qiymətlər sifarişin rəsmiləşdirilməsi anında qeydə alınmış tarixi qiymətlərə əsaslanır.
+                        </div>
+                        <div th:if="${isWarehouse}" class="text-xs text-gray-500 dark:text-gray-400">
+                            Məhsulların fiziki sayını və anbar ehtiyatlarını yoxlayaraq sifarişi təhvil verin.
+                        </div>
+                        <div class="flex items-center gap-6">
+                            <div class="text-right">
+                                <span class="text-xs text-gray-500 dark:text-gray-400 block">Cəmi məhsul:</span>
+                                <span class="text-sm font-bold text-gray-900 dark:text-white"
+                                      th:text="|${order.totalItems != null ? order.totalItems : 0} ədəd|">0 ədəd</span>
+                            </div>
+                            <div th:if="${!isWarehouse}" class="text-right">
+                                <span class="text-xs text-gray-500 dark:text-gray-400 block">Yekun Məbləğ:</span>
+                                <span class="text-xl sm:text-2xl font-extrabold text-primary dark:text-[#2ecc71]"
+                                      th:text="${order.totalAmount != null ? #numbers.formatDecimal(order.totalAmount, 1, 2, 'POINT') + ' AZN' : '0.00 AZN'}">0.00 AZN</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Script -->
+    <script th:src="@{/js/theme.js}" src="/js/theme.js"></script>
+    <!-- Reusable Admin Custom Dropdowns Script -->
+    <script th:src="@{/js/admin-dropdown.js}" src="/js/admin-dropdown.js"></script>
+    <!-- Fill Remaining Amount Script -->
+    <script>
+        function fillRemainingAmount(btn) {
+            var input = document.getElementById('payment-amount-input');
+            if (!input && btn) {
+                input = btn.closest('form') ? btn.closest('form').querySelector('input[name="amount"]') : null;
+            }
+            if (input && btn) {
+                var remaining = btn.getAttribute('data-remaining-amount');
+                if (remaining) {
+                    input.value = remaining;
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                    input.focus();
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
+

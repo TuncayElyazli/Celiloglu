@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="az" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cəliloğlu - 404 Məhsul Tapılmadı</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e5631',
+                        secondary: '#3b82f6',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fafafa;
+        }
+    </style>
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light-mode');
+        } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light-mode');
+        }
+    </script>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="/js/script.js" defer></script>
+</head>
+
+<body class="min-h-screen bg-[#fafafa] dark:bg-[#121212] text-gray-800 dark:text-[#e0e0e0] transition-colors duration-300 flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="bg-white dark:bg-[#121212] border-b border-gray-200 dark:border-[#333333] sticky top-0 z-50 shadow-sm transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="/" class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary dark:text-[#e0e0e0] dark:!bg-none tracking-tight transition-all duration-300">Cəliloğlu</a>
+                </div>
+
+                <!-- Right icons -->
+                <div class="flex items-center space-x-6 sm:space-x-8">
+                    <button id="theme-toggle" type="button" class="text-gray-500 dark:text-indigo-100 hover:text-primary dark:hover:text-white flex flex-col items-center transition-all duration-300 group focus:outline-none">
+                        <svg id="theme-toggle-dark-icon" class="hidden h-6 w-6 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                        </svg>
+                        <svg id="theme-toggle-light-icon" class="hidden h-6 w-6 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path>
+                        </svg>
+                        <span class="text-[11px] font-medium mt-1">Rejim</span>
+                    </button>
+                    <a href="/cart.html" class="text-gray-500 dark:text-indigo-100 hover:text-primary dark:hover:text-white flex flex-col items-center transition-all duration-300 group">
+                        <div class="relative">
+                            <svg class="h-6 w-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 0a2 2 0 100 4 2 2 0 000-4z" />
+                            </svg>
+                        </div>
+                        <span class="text-[11px] font-medium mt-1">Səbət</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main 404 Section -->
+    <main class="flex-1 flex items-center justify-center px-4 py-16">
+        <div class="max-w-xl w-full text-center bg-white dark:bg-[#1e1e1e] p-8 sm:p-12 rounded-3xl shadow-xl border border-gray-100 dark:border-[#333333]">
+            <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 mb-6">
+                <svg class="h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <h1 class="text-5xl font-extrabold text-gray-900 dark:text-[#e0e0e0] tracking-tight mb-3">404</h1>
+            <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-3">Məhsul və ya səhifə tapılmadı</h2>
+            <p class="text-gray-500 dark:text-gray-400 text-sm sm:text-base leading-relaxed mb-8"
+               th:text="${errorMessage != null ? errorMessage : 'Axtardığınız məhsul mövcud deyil, silinib və ya deaktiv edilib.'}">
+                Axtardığınız məhsul mövcud deyil, silinib və ya deaktiv edilib.
+            </p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="/"
+                   class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl shadow-md transition-all duration-300">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Ana səhifəyə qayıt
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-[#121212] border-t border-gray-200 dark:border-[#333333] py-6 text-center text-xs text-gray-500 dark:text-gray-400">
+        <p>&copy; 2026 Cəliloğlu. Bütün hüquqlar qorunur.</p>
+    </footer>
+
+    <script src="/js/theme.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="az" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cəliloğlu - Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e5631',
+                        secondary: '#3b82f6',
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light-mode');
+        } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light-mode');
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Light Mode Role Selection Dropdown Fix */
+        .light-mode #role-matrix-wrapper .custom-select-trigger,
+        html:not(.dark) #role-matrix-wrapper .custom-select-trigger,
+        .light-mode .custom-select-trigger,
+        html:not(.dark) .custom-select-trigger {
+            background-color: #ffffff !important;
+            border: 1px solid #e5e7eb !important;
+            color: #333333 !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .light-mode #role-matrix-wrapper .selected-text,
+        html:not(.dark) #role-matrix-wrapper .selected-text {
+            color: #333333 !important;
+        }
+
+        .light-mode #role-matrix-wrapper .selected-text span,
+        html:not(.dark) #role-matrix-wrapper .selected-text span {
+            color: #6b7280 !important;
+        }
+
+        .light-mode #role-matrix-options,
+        html:not(.dark) #role-matrix-options,
+        .light-mode .custom-options,
+        html:not(.dark) .custom-options {
+            background-color: #ffffff !important;
+            border: 1px solid #e5e7eb !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .light-mode #role-matrix-options .custom-option,
+        html:not(.dark) #role-matrix-options .custom-option,
+        .light-mode .custom-option,
+        html:not(.dark) .custom-option {
+            background-color: #ffffff !important;
+            color: #333333 !important;
+            border-bottom: 1px solid #f3f4f6 !important;
+        }
+
+        .light-mode #role-matrix-options .custom-option:hover,
+        html:not(.dark) #role-matrix-options .custom-option:hover,
+        .light-mode .custom-option:hover,
+        html:not(.dark) .custom-option:hover {
+            background-color: #f8fafc !important;
+            color: #1e5631 !important;
+        }
+
+        .light-mode #role-matrix-options .custom-option.selected-option,
+        html:not(.dark) #role-matrix-options .custom-option.selected-option,
+        .light-mode .custom-option.selected-option,
+        html:not(.dark) .custom-option.selected-option {
+            background-color: rgba(30, 86, 49, 0.08) !important;
+            color: #1e5631 !important;
+            font-weight: 700 !important;
+        }
+
+        /* ========================================================
+           Role Preview Modal & Global Theme Support (Dark & Light)
+           ======================================================== */
+
+        /* Sabit İcazə Mətn Rəngləri (Hər iki temada dəyişməz) */
+        .perm-text-view,
+        .perm-badge-view {
+            color: #2ecc71 !important;
+            background-color: rgba(46, 204, 113, 0.12) !important;
+            border: 1px solid rgba(46, 204, 113, 0.25) !important;
+        }
+
+        .perm-text-edit,
+        .perm-badge-edit {
+            color: #3498db !important;
+            background-color: rgba(52, 152, 219, 0.12) !important;
+            border: 1px solid rgba(52, 152, 219, 0.25) !important;
+        }
+
+        .perm-text-approve,
+        .perm-badge-approve {
+            color: #f39c12 !important;
+            background-color: rgba(243, 156, 18, 0.12) !important;
+            border: 1px solid rgba(243, 156, 18, 0.25) !important;
+        }
+
+        .perm-text-export,
+        .perm-badge-export {
+            color: #9b59b6 !important;
+            background-color: rgba(155, 89, 182, 0.12) !important;
+            border: 1px solid rgba(155, 89, 182, 0.25) !important;
+        }
+
+        /* 1. Default (Tünd Karbon / Dark Theme) */
+        .role-preview-modal {
+            background-color: #1e1e1e !important;
+            border: 1px solid #333333 !important;
+            color: #ffffff !important;
+        }
+
+        .role-preview-modal-header {
+            background-color: #1e1e1e !important;
+            border-color: #333333 !important;
+        }
+
+        #role-preview-modal-title {
+            color: #ffffff !important;
+        }
+
+        .role-preview-info-text {
+            color: #a0a0a0 !important;
+        }
+
+        .role-preview-close-btn {
+            color: #a0a0a0 !important;
+        }
+
+        .role-preview-close-btn:hover {
+            color: #ffffff !important;
+            background-color: #2a2a2a !important;
+        }
+
+        .role-preview-modal-body {
+            background-color: #1e1e1e !important;
+        }
+
+        .role-preview-module-card {
+            background-color: #2a2a2a !important;
+            border: 1px solid #333333 !important;
+            color: #ffffff !important;
+        }
+
+        .role-preview-module-card .module-title {
+            color: #ffffff !important;
+        }
+
+        .role-preview-modal-footer {
+            background-color: #1e1e1e !important;
+            border-color: #333333 !important;
+        }
+
+        .btn-close-role-preview {
+            background-color: #2a2a2a !important;
+            border: 1px solid #333333 !important;
+            color: #ffffff !important;
+        }
+
+        .btn-close-role-preview:hover {
+            background-color: #333333 !important;
+        }
+
+        .btn-role-preview {
+            background-color: #2a2a2a !important;
+            border: 1px solid #333333 !important;
+            color: #e0e0e0 !important;
+        }
+
+        .btn-role-preview:hover {
+            background-color: #333333 !important;
+            color: #ffffff !important;
+        }
+
+        /* 2. Ağ Tema (.light-mode və html:not(.dark)) */
+        .light-mode .role-preview-modal,
+        html:not(.dark) .role-preview-modal {
+            background-color: #ffffff !important;
+            border: 1px solid #e0e0e0 !important;
+            color: #333333 !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+        }
+
+        .light-mode .role-preview-modal-header,
+        html:not(.dark) .role-preview-modal-header {
+            background-color: #ffffff !important;
+            border-color: #e0e0e0 !important;
+        }
+
+        .light-mode #role-preview-modal-title,
+        html:not(.dark) #role-preview-modal-title {
+            color: #333333 !important;
+        }
+
+        .light-mode .role-preview-info-text,
+        html:not(.dark) .role-preview-info-text {
+            color: #666666 !important;
+        }
+
+        .light-mode .role-preview-close-btn,
+        html:not(.dark) .role-preview-close-btn {
+            color: #666666 !important;
+        }
+
+        .light-mode .role-preview-close-btn:hover,
+        html:not(.dark) .role-preview-close-btn:hover {
+            color: #111111 !important;
+            background-color: #f0f0f0 !important;
+        }
+
+        .light-mode .role-preview-modal-body,
+        html:not(.dark) .role-preview-modal-body {
+            background-color: #ffffff !important;
+        }
+
+        .light-mode .role-preview-module-card,
+        html:not(.dark) .role-preview-module-card {
+            background-color: #f8f9fa !important;
+            border: 1px solid #e0e0e0 !important;
+            color: #333333 !important;
+        }
+
+        .light-mode .role-preview-module-card .module-title,
+        html:not(.dark) .role-preview-module-card .module-title {
+            color: #333333 !important;
+        }
+
+        .light-mode .role-preview-modal-footer,
+        html:not(.dark) .role-preview-modal-footer {
+            background-color: #ffffff !important;
+            border-color: #e0e0e0 !important;
+        }
+
+        .light-mode .btn-close-role-preview,
+        html:not(.dark) .btn-close-role-preview {
+            background-color: #f8f9fa !important;
+            border: 1px solid #e0e0e0 !important;
+            color: #333333 !important;
+        }
+
+        .light-mode .btn-close-role-preview:hover,
+        html:not(.dark) .btn-close-role-preview:hover {
+            background-color: #e9ecef !important;
+            color: #111111 !important;
+        }
+
+        .light-mode .btn-role-preview,
+        html:not(.dark) .btn-role-preview {
+            background-color: #f8f9fa !important;
+            border: 1px solid #e0e0e0 !important;
+            color: #333333 !important;
+        }
+
+        .light-mode .btn-role-preview:hover,
+        html:not(.dark) .btn-role-preview:hover {
+            background-color: #e9ecef !important;
+            color: #111111 !important;
+        }
+
+        /* ========================================================
+           Ətraflı İcazələr Matriksi - Lokal Deny ('X') İkonları
+           ======================================================== */
+
+        /* 1. Default (Tünd Karbon / Dark Theme) */
+        .permissions-matrix .deny-icon,
+        .permissions-table td .deny-icon,
+        .permissions-table td.permission-cell .deny-icon {
+            color: #ff4d4d !important;
+            background-color: rgba(255, 77, 77, 0.1) !important;
+        }
+
+        /* 2. Ağ Tema (.light-mode və html:not(.dark)) */
+        .light-mode .permissions-matrix .deny-icon,
+        html:not(.dark) .permissions-matrix .deny-icon,
+        .light-mode .permissions-table td .deny-icon,
+        html:not(.dark) .permissions-table td .deny-icon,
+        .light-mode .permissions-table td.permission-cell .deny-icon,
+        html:not(.dark) .permissions-table td.permission-cell .deny-icon {
+            color: #d9534f !important;
+            background-color: rgba(217, 83, 79, 0.1) !important;
+        }
+    </style>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="/js/script.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body th:attr="data-admin-tab=${activeAdminTab}"
+    class="flex h-screen overflow-hidden text-gray-800 dark:text-[#e0e0e0] bg-gray-50 dark:bg-[#121212] transition-colors">
+
+    <!-- Sidebar -->
+    <aside th:replace="~{fragments/admin-sidebar :: sidebar('admin')}"></aside>
+
+    <!-- Main Wrapper -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50 dark:bg-[#121212] transition-colors">
+
+        <!-- Top Header -->
+        <header
+            class="h-20 bg-white dark:bg-[#121212] border-b border-gray-200 dark:border-[#333333] flex items-center justify-between px-8 flex-shrink-0 z-10 transition-colors duration-300 shadow-sm dark:shadow-lg">
+            <h1 id="admin-page-title"
+                class="text-xl font-bold text-gray-800 dark:text-[#e0e0e0] transition-colors duration-300">Ümumi Baxış
+            </h1>
+            <div class="flex items-center gap-6">
+
+                <!-- Theme Toggle -->
+                <button id="theme-toggle" type="button"
+                    class="text-gray-500 dark:text-indigo-100 hover:text-primary dark:hover:text-white flex flex-col items-center transition-all duration-300 group dark:hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] focus:outline-none">
+                    <svg id="theme-toggle-dark-icon" class="hidden h-6 w-6 group-hover:scale-110 transition-transform"
+                        fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                    </svg>
+                    <svg id="theme-toggle-light-icon" class="hidden h-6 w-6 group-hover:scale-110 transition-transform"
+                        fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                            fill-rule="evenodd" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="text-[11px] font-medium mt-1">Rejim</span>
+                </button>
+
+                <!-- Profile Block Fragment -->
+                <div th:replace="~{fragments/admin-header :: profile}"></div>
+            </div>
+        </header>
+
+        <!-- Scrollable Content -->
+        <main class="flex-1 overflow-y-auto p-8">
+            <div class="max-w-7xl mx-auto space-y-10">
+
+                <!-- Dashboard Section -->
+                <section id="dashboard" class="tab-content block"
+                    th:class="${activeAdminTab == 'dashboard'} ? 'tab-content block' : 'tab-content hidden'">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <!-- Stat 1: Ümumi sifariş sayı -->
+                        <div
+                            class="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border border-gray-100 dark:border-[#333333] shadow-sm flex items-center gap-5 transition-colors">
+                            <div
+                                class="h-14 w-14 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400 flex-shrink-0">
+                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p
+                                    class="text-sm font-semibold text-gray-500 dark:text-[#a0a0a0] mb-1 uppercase tracking-wider">
+                                    Ümumi Sifariş Sayı</p>
+                                <p class="text-3xl font-black text-gray-900 dark:text-[#ffffff]"
+                                    th:text="${dashboard != null ? dashboard.totalOrders : 0}">0</p>
+                            </div>
+                        </div>
+
+                        <!-- Stat 2: Gözləyən sifariş sayı -->
+                        <div
+                            class="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border border-gray-100 dark:border-[#333333] shadow-sm flex items-center gap-5 transition-colors">
+                            <div
+                                class="h-14 w-14 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center text-amber-600 dark:text-amber-400 flex-shrink-0">
+                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p
+                                    class="text-sm font-semibold text-gray-500 dark:text-[#a0a0a0] mb-1 uppercase tracking-wider">
+                                    Gözləyən Sifariş Sayı</p>
+                                <p class="text-3xl font-black text-gray-900 dark:text-[#ffffff]"
+                                    th:text="${dashboard != null ? dashboard.pendingOrders : 0}">0</p>
+                            </div>
+                        </div>
+
+                        <!-- Stat 3: Aktiv məhsul sayı -->
+                        <div
+                            class="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border border-gray-100 dark:border-[#333333] shadow-sm flex items-center gap-5 transition-colors">
+                            <div
+                                class="h-14 w-14 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 flex-shrink-0">
+                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p
+                                    class="text-sm font-semibold text-gray-500 dark:text-[#a0a0a0] mb-1 uppercase tracking-wider">
+                                    Aktiv Məhsul Sayı</p>
+                                <p class="text-3xl font-black text-gray-900 dark:text-[#ffffff]"
+                                    th:text="${dashboard != null ? dashboard.activeProducts : 0}">0</p>
+                            </div>
+                        </div>
+
+                        <!-- Stat 4: Daxil olmuş ödənişlər -->
+                        <div
+                            class="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border border-gray-100 dark:border-[#333333] shadow-sm flex items-center gap-5 transition-colors">
+                            <div
+                                class="h-14 w-14 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center text-purple-600 dark:text-purple-400 flex-shrink-0">
+                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p
+                                    class="text-sm font-semibold text-gray-500 dark:text-[#a0a0a0] mb-1 uppercase tracking-wider">
+                                    Daxil Olmuş Ödənişlər</p>
+                                <p class="text-3xl font-black text-gray-900 dark:text-[#ffffff]"
+                                    th:text="${dashboard != null and dashboard.receivedPayments != null ? #numbers.formatDecimal(dashboard.receivedPayments, 1, 2, 'POINT') + ' AZN' : '0.00 AZN'}">0.00 AZN</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Dynamics Line Chart Section -->
+                    <div
+                        class="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border border-gray-100 dark:border-[#333333] shadow-sm dark:shadow-[0_0_15px_rgba(255,255,255,0.05)] transition-colors mt-8">
+                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900 dark:text-[#e0e0e0]">Daxil Olan Ödənişlərin Dinamikası</h3>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                    Son <span id="payment-chart-period-subtitle">30</span> təqvim günü üzrə təsdiqlənmiş ödənişlər (cari gün hələ tamamlanmayıb)
+                                </p>
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-3">
+                                <!-- Period Toggle (7 gün / 30 gün) -->
+                                <div id="payment-chart-controls" class="hidden flex items-center bg-gray-100 dark:bg-white/5 p-1 rounded-xl border border-gray-200 dark:border-[#333333] text-xs font-semibold">
+                                    <button type="button" id="btn-period-7"
+                                            class="px-3 py-1.5 rounded-lg transition-all text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                                        7 gün
+                                    </button>
+                                    <button type="button" id="btn-period-30"
+                                            class="px-3 py-1.5 rounded-lg transition-all bg-white dark:bg-[#1e5631] text-primary dark:text-white shadow-sm">
+                                        30 gün
+                                    </button>
+                                </div>
+
+                                <!-- Chart Type Toggle (Xətt / Sütun) -->
+                                <div id="payment-chart-type-controls" class="hidden flex items-center bg-gray-100 dark:bg-white/5 p-1 rounded-xl border border-gray-200 dark:border-[#333333] text-xs font-semibold">
+                                    <button type="button" id="btn-type-line"
+                                            class="px-3 py-1.5 rounded-lg transition-all bg-white dark:bg-[#1e5631] text-primary dark:text-white shadow-sm flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                        </svg>
+                                        <span>Xətt</span>
+                                    </button>
+                                    <button type="button" id="btn-type-bar"
+                                            class="px-3 py-1.5 rounded-lg transition-all text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                        </svg>
+                                        <span>Sütun</span>
+                                    </button>
+                                </div>
+
+                                <!-- Period Total Amount Display -->
+                                <div class="bg-gray-50 dark:bg-white/5 px-4 py-2 rounded-xl border border-gray-100 dark:border-[#333333] text-right">
+                                    <span id="payment-chart-period-label" class="text-[11px] text-gray-500 dark:text-gray-400 block uppercase tracking-wider font-semibold">30 Günün Cəmi</span>
+                                    <span id="payment-chart-period-total" class="text-base font-black text-gray-900 dark:text-white"
+                                          th:text="${dashboard != null and dashboard.paymentChart != null and dashboard.paymentChart.totalAmount != null ? #numbers.formatDecimal(dashboard.paymentChart.totalAmount, 1, 2, 'POINT') + ' AZN' : '0.00 AZN'}">0.00 AZN</span>
+                                </div>
+
+                                <!-- Notice Badge if no payments in selected period -->
+                                <span id="payment-chart-no-data-notice"
+                                      th:class="${dashboard != null and dashboard.paymentChart != null and !dashboard.paymentChart.hasPayments} ? 'bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1.5 rounded-full border border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700/50' : 'hidden bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1.5 rounded-full border border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700/50'">
+                                    Bu dövrdə ödəniş yoxdur
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Interactive Chart.js Canvas Container -->
+                        <div id="payment-chart-canvas-container" class="hidden relative w-full h-64 sm:h-72">
+                            <canvas id="payment-chart-canvas"></canvas>
+                        </div>
+
+                        <!-- SVG Fallback View (Shown initially, hidden once Chart.js initializes) -->
+                        <div id="payment-chart-svg-fallback" class="relative w-full overflow-hidden">
+                            <div class="w-full h-64 sm:h-72">
+                                <svg class="w-full h-full" viewBox="0 0 800 240" preserveAspectRatio="none">
+                                    <defs>
+                                        <linearGradient id="paymentGradient" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stop-color="#1e5631" stop-opacity="0.35" />
+                                            <stop offset="100%" stop-color="#1e5631" stop-opacity="0.0" />
+                                        </linearGradient>
+                                    </defs>
+
+                                    <!-- Horizontal Grid Lines -->
+                                    <line x1="65" y1="25" x2="775" y2="25" stroke="currentColor" stroke-dasharray="3 3" class="text-gray-200 dark:text-white/10" stroke-width="1" />
+                                    <line x1="65" y1="81.7" x2="775" y2="81.7" stroke="currentColor" stroke-dasharray="3 3" class="text-gray-200 dark:text-white/10" stroke-width="1" />
+                                    <line x1="65" y1="138.3" x2="775" y2="138.3" stroke="currentColor" stroke-dasharray="3 3" class="text-gray-200 dark:text-white/10" stroke-width="1" />
+                                    <line x1="65" y1="195" x2="775" y2="195" stroke="currentColor" class="text-gray-300 dark:text-white/20" stroke-width="1.5" />
+
+                                    <!-- Y-Axis Labels -->
+                                    <g th:if="${dashboard != null and dashboard.paymentChart != null and dashboard.paymentChart.yAxisLabels != null}">
+                                        <text th:each="lbl : ${dashboard.paymentChart.yAxisLabels}"
+                                              th:x="${lbl.x}" th:y="${lbl.y}" text-anchor="end"
+                                              class="fill-gray-400 dark:fill-gray-500 text-[11px] font-medium"
+                                              th:text="${lbl.label}">0 AZN</text>
+                                    </g>
+
+                                    <!-- X-Axis Labels -->
+                                    <g th:if="${dashboard != null and dashboard.paymentChart != null and dashboard.paymentChart.xAxisLabels != null}">
+                                        <text th:each="lbl : ${dashboard.paymentChart.xAxisLabels}"
+                                              th:x="${lbl.x}" th:y="${lbl.y}" text-anchor="middle"
+                                              class="fill-gray-500 dark:fill-gray-400 text-[11px] font-semibold"
+                                              th:text="${lbl.label}">01.01</text>
+                                    </g>
+
+                                    <!-- Area Fill (Background) -->
+                                    <path th:if="${dashboard != null and dashboard.paymentChart != null and !#strings.isEmpty(dashboard.paymentChart.svgPathArea)}"
+                                          th:d="${dashboard.paymentChart.svgPathArea}"
+                                          fill="url(#paymentGradient)" />
+
+                                    <!-- Trend Line -->
+                                    <path th:if="${dashboard != null and dashboard.paymentChart != null and !#strings.isEmpty(dashboard.paymentChart.svgPathLine)}"
+                                          th:d="${dashboard.paymentChart.svgPathLine}"
+                                          fill="none"
+                                          stroke="#1e5631"
+                                          stroke-width="2.5"
+                                          stroke-linecap="round"
+                                          stroke-linejoin="round"
+                                          class="dark:stroke-[#2ecc71]" />
+
+                                    <!-- Interactive Data Points with Tooltips -->
+                                    <g th:if="${dashboard != null and dashboard.paymentChart != null and dashboard.paymentChart.points != null}">
+                                        <g th:each="pt : ${dashboard.paymentChart.points}" class="group">
+                                            <!-- Vertical guideline on hover -->
+                                            <line th:x1="${pt.x}" y1="25" th:x2="${pt.x}" y2="195"
+                                                  stroke="currentColor" stroke-dasharray="2 2"
+                                                  class="text-gray-300 dark:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                                            <!-- Point circle -->
+                                            <circle th:cx="${pt.x}" th:cy="${pt.y}" r="3.5"
+                                                    class="fill-[#1e5631] dark:fill-[#2ecc71] stroke-white dark:stroke-[#1e1e1e] stroke-2 hover:r-5 transition-all cursor-pointer">
+                                                <title th:text="|Tarix: ${pt.fullDate}&#10;Məbləğ: ${pt.formattedAmount}|">Tarix: 01.01.2026&#10;Məbləğ: 0.00 AZN</title>
+                                            </circle>
+                                        </g>
+                                    </g>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- Notice if no payments in period -->
+                        <div th:if="${dashboard != null and dashboard.paymentChart != null and !dashboard.paymentChart.hasPayments}"
+                             class="mt-3 text-center">
+                            <p class="text-xs text-amber-600 dark:text-amber-400 font-medium">Bu dövrdə ödəniş yoxdur</p>
+                        </div>
+                    </div>
+
+                    <!-- Recent Orders Section -->
+                    <div
+                        class="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border border-gray-100 dark:border-[#333333] shadow-sm dark:shadow-[0_0_15px_rgba(255,255,255,0.05)] transition-colors mt-8">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900 dark:text-[#e0e0e0]">Son Sifarişlər</h3>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Son daxil olan 5 müştəri sifarişi</p>
+                            </div>
+                            <a th:href="@{/admin/orders}" href="/admin/orders"
+                               class="inline-flex items-center text-sm font-semibold text-primary hover:text-primary/80 dark:text-[#2ecc71] dark:hover:text-[#2ecc71]/80 hover:underline gap-1">
+                                <span>Hamısına bax</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </a>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div th:if="${dashboard == null or dashboard.recentOrders == null or #lists.isEmpty(dashboard.recentOrders)}" class="p-8 text-center">
+                            <svg class="h-12 w-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            </svg>
+                            <h4 class="text-base font-bold text-gray-900 dark:text-white mb-1">Heç bir sifariş tapılmadı</h4>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Hazırda sistemdə qeydə alınmış heç bir müştəri sifarişi yoxdur.</p>
+                        </div>
+
+                        <!-- Table -->
+                        <div th:if="${dashboard != null and dashboard.recentOrders != null and !#lists.isEmpty(dashboard.recentOrders)}" class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr
+                                        class="bg-gray-50/80 dark:bg-white/5 border-b border-gray-100 dark:border-[#333333] text-xs font-semibold text-gray-500 dark:text-[#e0e0e0] uppercase tracking-wider transition-colors">
+                                        <th scope="col" class="px-4 py-3">Sifariş №</th>
+                                        <th scope="col" class="px-4 py-3">Tarix</th>
+                                        <th scope="col" class="px-4 py-3">Müştəri</th>
+                                        <th scope="col" class="px-4 py-3">Məbləğ</th>
+                                        <th scope="col" class="px-4 py-3">Sifariş Statusu</th>
+                                        <th scope="col" class="px-4 py-3">Ödəniş Statusu</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 dark:divide-[#333333]">
+                                    <tr th:each="order : ${dashboard.recentOrders}" class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                        <!-- Sifariş № -->
+                                        <td class="px-4 py-3 font-bold whitespace-nowrap">
+                                            <a th:href="@{/admin/orders/{id}(id=${order.id})}"
+                                               th:text="'#' + ${order.orderNumber}"
+                                               class="text-primary hover:text-primary/80 dark:text-[#2ecc71] dark:hover:text-[#2ecc71]/80 hover:underline">
+                                                #ORD-00001
+                                            </a>
+                                        </td>
+                                        <!-- Tarix -->
+                                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400 whitespace-nowrap text-xs sm:text-sm"
+                                            th:text="${order.orderDate != null ? #temporals.format(order.orderDate, 'dd.MM.yyyy HH:mm') : '-'}">
+                                            24.09.2026 14:30
+                                        </td>
+                                        <!-- Müştəri -->
+                                        <td class="px-4 py-3 text-gray-900 dark:text-white">
+                                            <div>
+                                                <span class="font-semibold" th:text="${order.customerFullName != null ? order.customerFullName : (order.customerUsername != null ? order.customerUsername : '-')}">Müştəri</span>
+                                                <span class="text-xs text-gray-400 dark:text-gray-500 font-normal ml-1"
+                                                      th:if="${order.customerUsername != null}"
+                                                      th:text="'(@' + ${order.customerUsername} + ')'">(@user)</span>
+                                            </div>
+                                        </td>
+                                        <!-- Məbləğ -->
+                                        <td class="px-4 py-3 font-bold text-gray-900 dark:text-white whitespace-nowrap"
+                                            th:text="${order.totalAmount != null ? #numbers.formatDecimal(order.totalAmount, 1, 2, 'POINT') + ' AZN' : '0.00 AZN'}">
+                                            0.00 AZN
+                                        </td>
+                                        <!-- Sifariş Statusu -->
+                                        <td class="px-4 py-3 whitespace-nowrap">
+                                            <span th:if="${order.status != null and order.status.name() == 'GÖZLƏYİR'}"
+                                                  class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2.5 py-1 rounded-full border border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-700/50 uppercase tracking-wider"
+                                                  th:text="${order.status.displayName}">Gözləyir</span>
+                                            <span th:if="${order.status != null and order.status.name() == 'HAZIRLANIR'}"
+                                                  class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded-full border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700/50 uppercase tracking-wider"
+                                                  th:text="${order.status.displayName}">Hazırlanır</span>
+                                            <span th:if="${order.status != null and order.status.name() == 'KARQOYA_VERİLDİ'}"
+                                                  class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2.5 py-1 rounded-full border border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-400 dark:border-indigo-700/50 uppercase tracking-wider"
+                                                  th:text="${order.status.displayName}">Karqoya verildi</span>
+                                            <span th:if="${order.status != null and order.status.name() == 'ÇATDIRILDI'}"
+                                                  class="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-1 rounded-full border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700/50 uppercase tracking-wider"
+                                                  th:text="${order.status.displayName}">Çatdırıldı</span>
+                                            <span th:if="${order.status != null and order.status.name() == 'LƏĞV_EDİLDİ'}"
+                                                  class="bg-red-100 text-red-800 text-xs font-bold px-2.5 py-1 rounded-full border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-700/50 uppercase tracking-wider"
+                                                  th:text="${order.status.displayName}">Ləğv edildi</span>
+                                        </td>
+                                        <!-- Ödəniş Statusu -->
+                                        <td class="px-4 py-3 whitespace-nowrap">
+                                            <span th:if="${order.paymentStatus != null and order.paymentStatus.name() == 'TAM_ÖDƏNİLMİŞ'}"
+                                                  class="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-1 rounded-full border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700/50 uppercase tracking-wider"
+                                                  th:text="${order.paymentStatus.displayName}">Tam Ödənilmiş</span>
+                                            <span th:if="${order.paymentStatus != null and order.paymentStatus.name() == 'QİSMƏN_ÖDƏNİLMİŞ'}"
+                                                  class="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-1 rounded-full border border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700/50 uppercase tracking-wider"
+                                                  th:text="${order.paymentStatus.displayName}">Qismən Ödənilmiş</span>
+                                            <span th:if="${order.paymentStatus != null and order.paymentStatus.name() == 'ÖDƏNİŞ_GÖZLƏYİR'}"
+                                                  class="bg-gray-100 text-gray-800 text-xs font-bold px-2.5 py-1 rounded-full border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 uppercase tracking-wider"
+                                                  th:text="${order.paymentStatus.displayName}">Ödəniş Gözləyən</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Orders Section -->
+                <!-- Orders Section -->
+                <section id="orders" class="tab-content hidden">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-bold text-gray-900 dark:text-[#e0e0e0]">Sifarişlər</h2>
+                    </div>
+                    <div
+                        class="bg-white dark:bg-[#1e1e1e] rounded-2xl border border-gray-100 dark:border-[#333333] shadow-sm p-8 text-center transition-colors">
+                        <svg class="h-12 w-12 mx-auto text-primary dark:text-[#2ecc71] mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <h3 class="text-base font-bold text-gray-900 dark:text-[#e0e0e0] mb-2">Bütün Müştəri Sifarişləri</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                            Sifarişlərin real verilənlər bazası üzrə siyahılanması və detallı baxışı üçün Sifarişlər səhifəsinə keçid edin.
+                        </p>
+                        <a th:href="@{/admin/orders}" href="/admin/orders"
+                            class="inline-flex items-center px-5 py-2.5 bg-primary hover:bg-primary/90 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors">
+                            Sifarişlər Siyahısına Keç
+                        </a>
+                    </div>
+                </section>
+                <!-- Products CRUD Section -->
+                <section id="products" class="tab-content hidden"
+                    th:class="${activeAdminTab == 'products'} ? 'tab-content block' : 'tab-content hidden'">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-900 dark:text-[#e0e0e0]">Məhsullar</h2>
+                            <p class="text-sm text-gray-500 dark:text-gray-400"
+                                th:text="|${productPage.totalElements} məhsul|">0 məhsul</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <a id="btn-export-products-excel" th:href="@{/admin/products/export/excel}"
+                                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#1e1e1e] text-gray-700 dark:text-[#e0e0e0] text-sm font-semibold hover:bg-gray-50 dark:hover:bg-[#282828] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1e5631]/50">
+                                <svg class="h-4 w-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Bütün məhsulları Excel-ə çıxart
+                            </a>
+                            <a id="btn-add-product" th:href="@{/admin/products/new}"
+                                class="bg-gray-900 dark:bg-primary text-white text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-gray-800 dark:hover:bg-primary/90 transition-colors shadow-sm flex items-center gap-2 focus:ring-4 focus:ring-gray-200">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4" />
+                                </svg>
+                                Yeni məhsul əlavə et
+                            </a>
+                        </div>
+                    </div>
+                    <p th:if="${productSuccess != null}" th:text="${productSuccess}" role="status"
+                        class="mb-4 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800 dark:border-green-800 dark:bg-green-900/20 dark:text-green-300">
+                    </p>
+                    <p th:if="${productError != null}" th:text="${productError}" role="alert"
+                        class="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
+                    </p>
+                    <div
+                        class="bg-white dark:bg-[#1e1e1e] rounded-2xl border border-gray-100 dark:border-[#333333] shadow-sm dark:shadow-[0_0_15px_rgba(255,255,255,0.05)] overflow-hidden transition-colors">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr
+                                        class="bg-gray-50/80 dark:bg-[#1e1e1e] border-b border-gray-100 dark:border-[#333333] text-xs font-semibold text-gray-500 dark:text-[#e0e0e0] uppercase tracking-wider transition-colors">
+                                        <th class="px-6 py-4 w-24">Şəkil</th>
+                                        <th class="px-6 py-4">Ad</th>
+                                        <th class="px-6 py-4">Məzmun</th>
+                                        <th class="px-6 py-4">Marka/İl</th>
+                                        <th class="px-6 py-4">Kod</th>
+                                        <th class="px-6 py-4">Miqdar</th>
+                                        <th class="px-6 py-4">Qiymət</th>
+                                        <th class="px-6 py-4">Vəziyyət</th>
+                                        <th class="px-6 py-4 text-right">Əməliyyatlar</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="products-table-body"
+                                    class="divide-y divide-gray-100 dark:divide-[#333333] text-sm">
+                                    <tr th:if="${#lists.isEmpty(products)}">
+                                        <td colspan="9" class="px-6 py-10 text-center text-gray-500 dark:text-gray-400">
+                                            Bu səhifədə məhsul yoxdur.</td>
+                                    </tr>
+                                    <tr th:each="product : ${products}"
+                                        class="hover:bg-gray-50/50 dark:hover:bg-[#1e5631]/10 transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div
+                                                class="h-12 w-12 rounded-lg overflow-hidden border border-gray-200 dark:border-[#333333] bg-gray-100 dark:bg-[#1e1e1e]">
+                                                <img th:src="${#strings.isEmpty(product.imageUrl) ? 'https://placehold.co/150x150/e2e8f0/1e293b?text=Foto' : product.imageUrl}"
+                                                    class="h-full w-full object-cover" th:alt="${product.name}">
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 font-bold text-gray-900 dark:text-[#e0e0e0]">
+                                            <span th:text="${product.name}">Məhsulun adı</span>
+                                            <span th:if="${product.categoryName != null}"
+                                                th:text="${product.categoryName}"
+                                                class="block text-xs font-normal text-gray-500 dark:text-gray-400 mt-1"></span>
+                                        </td>
+                                        <td class="px-6 py-4 text-gray-500 dark:text-gray-400 max-w-xs truncate"
+                                            th:text="${product.description}" th:title="${product.description}"></td>
+                                        <td class="px-6 py-4 text-gray-700 dark:text-[#e0e0e0] text-sm">
+                                            <span
+                                                th:text="${product.carBrandName == null ? '—' : product.carBrandName}">—</span>
+                                            <span th:if="${!#strings.isEmpty(product.yearRange)}"
+                                                th:text="| / ${product.yearRange}|"></span>
+                                        </td>
+                                        <td class="px-6 py-4 font-mono text-xs text-primary" th:text="${product.code}">
+                                            Kod</td>
+                                        <td class="px-6 py-4 font-medium text-gray-700 dark:text-[#e0e0e0]"
+                                            th:text="|${product.stockQuantity == null ? 0 : product.stockQuantity} ədəd|">
+                                            0 ədəd</td>
+                                        <td class="px-6 py-4 font-bold text-gray-900 dark:text-[#e0e0e0]"
+                                            th:text="|${product.price} AZN|">0 AZN</td>
+                                        <td class="px-6 py-4">
+                                            <span th:if="${product.isActive == true}"
+                                                class="rounded-full px-2.5 py-1 text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">Aktiv</span>
+                                            <span th:unless="${product.isActive == true}"
+                                                class="rounded-full px-2.5 py-1 text-xs font-semibold bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-300">Deaktiv</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <div class="flex justify-end gap-2">
+                                                <a th:href="@{/admin/products/{id}/edit(id=${product.id})}"
+                                                    class="p-2 text-primary hover:bg-primary/10 dark:text-[#2ecc71] dark:hover:bg-[#1e5631]/20 rounded-lg transition-colors border border-transparent hover:border-primary/20"
+                                                    title="Düzəliş et" aria-label="Məhsulu redaktə et">
+                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                    </svg>
+                                                </a>
+                                                <form th:if="${product.isActive == true}" method="post"
+                                                    th:action="@{/admin/products/{id}/deactivate(id=${product.id})}"
+                                                    onsubmit="return confirm('Məhsul ana səhifədən gizlədilsin? Bazadakı məlumat qalacaq.');">
+                                                    <button type="submit"
+                                                        class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 rounded-lg transition-colors border border-transparent hover:border-red-100"
+                                                        title="Deaktiv et" aria-label="Məhsulu deaktiv et">
+                                                        <svg class="h-4 w-4" fill="none" stroke="currentColor"
+                                                            viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Product Pagination -->
+                        <nav th:if="${productPage.totalPages > 1}" aria-label="Məhsul səhifələri"
+                            class="mt-8 mb-4 flex items-center justify-center gap-4 text-sm text-gray-700 dark:text-[#e0e0e0]">
+                            <a th:if="${productPage.hasPrevious()}"
+                                th:href="@{/admin(tab='products',page=${productPage.number - 1})}"
+                                class="px-4 py-2 rounded-xl border border-gray-200 dark:border-[#333333]">Əvvəlki</a>
+                            <span th:text="|${productPage.number + 1} / ${productPage.totalPages}|">1 / 1</span>
+                            <a th:if="${productPage.hasNext()}"
+                                th:href="@{/admin(tab='products',page=${productPage.number + 1})}"
+                                class="px-4 py-2 rounded-xl border border-gray-200 dark:border-[#333333]">Növbəti</a>
+                        </nav>
+                    </div>
+                </section>
+
+
+
+                <!-- Customer Balances (Müştəri Hesablaşmaları) Section -->
+                <section id="b2b-analytics" class="tab-content hidden">
+                    <div class="p-8 text-center bg-white dark:bg-[#1e1e1e] rounded-2xl border border-gray-100 dark:border-[#333333] shadow-sm">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center text-primary dark:text-[#4ade80]">
+                            <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                        </div>
+                        <h2 class="text-xl font-bold text-gray-900 dark:text-[#e0e0e0] mb-2">Müştəri Hesablaşmaları</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Müştərilər üzrə sifarişlər, ödənişlər və qalıq borclar.</p>
+                        <a href="/admin/analytics" th:href="@{/admin/analytics}" title="Müştəri Hesablaşmaları" class="inline-flex items-center px-5 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary/90 transition-colors shadow-sm">Müştəri Hesablaşmaları Səhifəsinə Keçid</a>
+                    </div>
+                </section>
+                <section id="payments" class="tab-content hidden">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900 dark:text-[#e0e0e0]">Daxil Olmuş Ödənişlər
+                                Jurnalı</h2>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Bank hesablaşma hesabı və ya nağd
+                                kassa orderləri üzrə manual daxil edilmiş rəsmi ödənişlər</p>
+                        </div>
+                        <button
+                            class="bg-[#1e5631] text-white text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-[#1e5631]/90 transition-colors shadow-sm flex items-center gap-2 focus:ring-4 focus:ring-[#1e5631]/20">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                            Yeni Ödəniş Daxil Et
+                        </button>
+                    </div>
+
+                    <!-- 3 Data Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <!-- Card 1 -->
+                        <div
+                            class="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border border-gray-100 dark:border-[#333333] shadow-sm flex flex-col justify-center transition-colors">
+                            <p class="text-sm font-semibold text-gray-500 dark:text-[#e0e0e0] opacity-80 mb-2">Cəmi
+                                Daxil Olan Məbləğ</p>
+                            <p class="text-3xl font-black text-[#1e5631]">4 178,00 ₼</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">Bütün qeydə alınmış kassa/bank
+                                qəbzləri</p>
+                        </div>
+
+                        <!-- Card 2 -->
+                        <div
+                            class="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border border-gray-100 dark:border-[#333333] shadow-sm flex flex-col justify-center transition-colors">
+                            <p class="text-sm font-semibold text-gray-500 dark:text-[#e0e0e0] opacity-80 mb-2">Qeydə
+                                Alınmış Qəbzlər</p>
+                            <p class="text-3xl font-black text-gray-900 dark:text-white">5 ədəd</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">Rəsmi mədaxil sənədi</p>
+                        </div>
+
+                        <!-- Card 3 -->
+                        <div
+                            class="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border border-gray-100 dark:border-[#333333] shadow-sm flex flex-col justify-center transition-colors">
+                            <p class="text-sm font-semibold text-gray-500 dark:text-[#e0e0e0] opacity-80 mb-2">Ödəniş
+                                Mexanizmi Qaydası</p>
+                            <p class="text-sm text-gray-700 dark:text-gray-400 leading-relaxed">
+                                Onlayn kart ödənişi yoxdur. Kassir bank çıxarışı və ya nağd kassa qəbzi daxil olduqda bu
+                                formadan məbləği qeyd edir və sifarişin ödəniş statusu avtomatik yenilənir.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Search and Table -->
+                    <div
+                        class="bg-white dark:bg-[#1e1e1e] rounded-2xl border border-gray-100 dark:border-[#333333] shadow-sm overflow-hidden transition-colors">
+                        <div class="p-4 border-b border-gray-100 dark:border-[#333333]">
+                            <div class="relative max-w-xl">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                </div>
+                                <input type="text"
+                                    class="bg-gray-50 dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333333] text-gray-900 dark:text-[#e0e0e0] text-sm rounded-xl focus:ring-[#1e5631] focus:border-[#1e5631] block w-full pl-10 p-2.5 transition-colors placeholder-gray-400"
+                                    placeholder="Qəbz nömrəsi, sifariş nömrəsi və ya şirkət adı ilə axtar...">
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr
+                                        class="bg-gray-50/80 dark:bg-white/5 border-b border-gray-100 dark:border-[#333333] text-xs font-semibold text-gray-500 dark:text-[#e0e0e0] uppercase tracking-wider transition-colors">
+                                        <th class="px-6 py-4 whitespace-nowrap">QƏBZ / SƏNƏD #</th>
+                                        <th class="px-6 py-4 whitespace-nowrap">SİFARİŞ #</th>
+                                        <th class="px-6 py-4">MÜŞTƏRİ ŞİRKƏT</th>
+                                        <th class="px-6 py-4 whitespace-nowrap">MƏBLƏĞ</th>
+                                        <th class="px-6 py-4 whitespace-nowrap">TARİX</th>
+                                        <th class="px-6 py-4 whitespace-nowrap">ÖDƏNİŞ ÜSULU</th>
+                                        <th class="px-6 py-4 whitespace-nowrap">QEYDƏ ALAN KASSİR</th>
+                                        <th class="px-6 py-4">QEYD</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 dark:divide-white/10 text-sm">
+                                    <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors group">
+                                        <td class="px-6 py-4 font-mono font-bold text-gray-900 dark:text-[#e0e0e0]">
+                                            PMT-2026-096</td>
+                                        <td class="px-6 py-4 font-mono text-[#1e5631]">ORD-2026-1041</td>
+                                        <td class="px-6 py-4 font-medium text-gray-900 dark:text-[#e0e0e0]">Baku Prime
+                                            Development MMC</td>
+                                        <td class="px-6 py-4 font-black text-[#1e5631]">955,00 ₼</td>
+                                        <td class="px-6 py-4 text-gray-600 dark:text-gray-400">2026-09-29</td>
+                                        <td class="px-6 py-4 text-gray-600 dark:text-gray-400">Bank köçürməsi</td>
+                                        <td class="px-6 py-4 text-gray-600 dark:text-gray-400">Rauf Əliyev (Baş
+                                            Administrator)</td>
+                                        <td class="px-6 py-4 text-gray-500 dark:text-gray-500">—</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors group">
+                                        <td class="px-6 py-4 font-mono font-bold text-gray-900 dark:text-[#e0e0e0]">
+                                            PMT-2026-095</td>
+                                        <td class="px-6 py-4 font-mono text-[#1e5631]">ORD-2026-1046</td>
+                                        <td class="px-6 py-4 font-medium text-gray-900 dark:text-[#e0e0e0]">Mega Yapı
+                                            İnşaat MMC</td>
+                                        <td class="px-6 py-4 font-black text-[#1e5631]">500,00 ₼</td>
+                                        <td class="px-6 py-4 text-gray-600 dark:text-gray-400">2026-09-29</td>
+                                        <td class="px-6 py-4 text-gray-600 dark:text-gray-400">Bank köçürməsi</td>
+                                        <td class="px-6 py-4 text-gray-600 dark:text-gray-400">Rauf Əliyev (Baş
+                                            Administrator)</td>
+                                        <td class="px-6 py-4 text-gray-500 dark:text-gray-500">ABB-1046</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors group">
+                                        <td class="px-6 py-4 font-mono font-bold text-gray-900 dark:text-[#e0e0e0]">
+                                            PMT-2026-091</td>
+                                        <td class="px-6 py-4 font-mono text-[#1e5631]">ORD-2026-1043</td>
+                                        <td class="px-6 py-4 font-medium text-gray-900 dark:text-[#e0e0e0]">Qarabağ
+                                            Regional Təchizat MMC</td>
+                                        <td class="px-6 py-4 font-black text-[#1e5631]">800,00 ₼</td>
+                                        <td class="px-6 py-4 text-gray-600 dark:text-gray-400">2026-09-23</td>
+                                        <td class="px-6 py-4 text-gray-600 dark:text-gray-400">Kassa / Nağd qəbz</td>
+                                        <td class="px-6 py-4 text-gray-600 dark:text-gray-400">Günel Məmmədova (Kassir)
+                                        </td>
+                                        <td class="px-6 py-4 text-gray-500 dark:text-gray-500">(avans ödənişi)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Team and Permissions Section (Redirected to /admin/team) -->
+                <section id="team-permissions" class="tab-content hidden">
+                    <div class="p-12 text-center bg-white dark:bg-[#1e1e1e] rounded-2xl border border-gray-100 dark:border-[#333333] shadow-sm max-w-2xl mx-auto my-12">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Komanda və İcazələr</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Daxili işçilər və RBAC rol idarəetməsi ayrıca səhifəyə bağlanmışdır.</p>
+                        <a href="/admin/team" th:href="@{/admin/team}" class="inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-opacity-90 text-white text-sm font-bold rounded-xl shadow-md transition-all cursor-pointer">
+                            Komanda Səhifəsinə Keçid
+                        </a>
+                    </div>
+                </section>
+
+                <div class="pb-10"></div> <!-- spacing -->
+            </div>
+        </main>
+    </div>
+
+
+
+    <!-- Product Modal -->
+    <div id="product-modal" class="fixed inset-0 z-50 flex items-center justify-center"
+        th:classappend="${openProductModal} ? '' : 'hidden'" th:attr="data-close-url=@{/admin(tab='products')}"
+        role="dialog" aria-modal="true" aria-labelledby="product-modal-title">
+        <div class="absolute inset-0 bg-black/50 dark:bg-[#121212]/80 backdrop-blur-sm transition-opacity"
+            id="product-modal-backdrop" onclick="closeProductModal()"></div>
+        <div
+            class="relative bg-white dark:bg-[#1e1e1e] rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden flex flex-col max-h-[90vh] dark:border dark:border-[#333333]">
+            <div
+                class="px-6 py-4 border-b border-gray-100 dark:border-[#333333] flex justify-between items-center bg-gray-50/50 dark:bg-[#1e1e1e]/50">
+                <h3 id="product-modal-title" class="text-lg font-bold text-gray-900 dark:text-[#e0e0e0]"
+                    th:text="${editingProductId == null} ? 'Yeni məhsul' : 'Məhsulu redaktə et'">Məhsul məlumatları</h3>
+                <button id="btn-close-modal" type="button" onclick="closeProductModal()" aria-label="Bağla"
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="px-6 py-6 overflow-y-auto flex-1">
+                <form id="product-form" class="space-y-4" method="post" enctype="multipart/form-data"
+                    th:object="${productForm}"
+                    th:action="${editingProductId == null} ? @{/admin/products} : @{/admin/products/{id}(id=${editingProductId})}">
+                    <div th:if="${#fields.hasAnyErrors()}" role="alert"
+                        class="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
+                        <p class="font-semibold">Məhsul saxlanılmadı.</p>
+                        <ul class="list-disc pl-5 mt-1">
+                            <li th:each="error : ${#fields.globalErrors()}" th:text="${error}"></li>
+                        </ul>
+                        <p class="mt-2 text-xs">Şəkil faylı seçmişdinizsə, onu yenidən seçin.</p>
+                    </div>
+                    <div>
+                        <label for="product-image"
+                            class="block text-sm font-medium text-gray-700 dark:text-[#e0e0e0] mb-1">Şəkil yüklə</label>
+                        <input type="file" id="product-image" name="imageFile" accept="image/png,image/jpeg"
+                            class="w-full text-sm text-gray-500 dark:text-[#e0e0e0] file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-colors">
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">PNG və ya JPG, maksimum 1 MB və 16
+                            meqapiksel. Şəkil seçmək məcburi deyil.</p>
+                        <p id="product-image-error" class="hidden mt-1 text-xs text-red-600 dark:text-red-400"
+                            role="alert"></p>
+                    </div>
+                    <div>
+                        <label for="product-image-url"
+                            class="block text-sm font-medium text-gray-700 dark:text-[#e0e0e0] mb-1">Şəkil linki (istəyə
+                            bağlı)</label>
+                        <input type="text" id="product-image-url" th:field="*{imageUrl}"
+                            class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333333] dark:bg-[#1e1e1e] dark:text-[#e0e0e0] focus:outline-none focus:ring-2 focus:ring-[#1e5631]/50 focus:border-[#1e5631] transition-colors placeholder-gray-400"
+                            maxlength="255" placeholder="https://...">
+                        <p th:if="${#fields.hasErrors('imageUrl')}" class="mt-1 text-xs text-red-600 dark:text-red-400">
+                            Bu sahəni düzgün doldurun.</p>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Fayl seçsəniz, həmin şəkil istifadə olunacaq.
+                        Redaktədə şəkli dəyişmirsinizsə, mövcud linki saxlayın.</p>
+                    <div>
+                        <label for="product-name"
+                            class="block text-sm font-medium text-gray-700 dark:text-[#e0e0e0] mb-1">Ad</label>
+                        <input type="text" id="product-name" th:field="*{name}"
+                            class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333333] dark:bg-[#1e1e1e] dark:text-[#e0e0e0] focus:outline-none focus:ring-2 focus:ring-[#1e5631]/50 focus:border-[#1e5631] transition-colors placeholder-gray-400"
+                            maxlength="255" placeholder="Məhsulun adı" required>
+                        <p th:if="${#fields.hasErrors('name')}" class="mt-1 text-xs text-red-600 dark:text-red-400">Bu
+                            sahəni düzgün doldurun.</p>
+                    </div>
+                    <div>
+                        <label for="product-desc"
+                            class="block text-sm font-medium text-gray-700 dark:text-[#e0e0e0] mb-1">Məzmun</label>
+                        <input type="text" id="product-desc" th:field="*{description}"
+                            class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333333] dark:bg-[#1e1e1e] dark:text-[#e0e0e0] focus:outline-none focus:ring-2 focus:ring-[#1e5631]/50 focus:border-[#1e5631] transition-colors placeholder-gray-400"
+                            maxlength="255" placeholder="Məhsul haqqında qısa məlumat">
+                        <p th:if="${#fields.hasErrors('description')}"
+                            class="mt-1 text-xs text-red-600 dark:text-red-400">Bu sahəni düzgün doldurun.</p>
+                    </div>
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-gray-700 dark:text-[#e0e0e0] mb-1">Kateqoriya <span class="text-red-500">*</span></label>
+                        <div class="custom-select-wrapper relative w-full" id="product-category-wrapper">
+                            <input type="hidden" id="product-category" th:field="*{categoryId}"
+                                class="custom-select-input">
+                            <div
+                                class="custom-select-trigger flex justify-between items-center w-full px-3 py-2 border border-[#333333] bg-[#1e1e1e] rounded-lg text-[#e0e0e0] cursor-pointer">
+                                <span class="selected-text" th:text="${selectedCategoryName}">Seçilməyib</span>
+                                <svg class="h-4 w-4 text-gray-500 ml-2" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                            <ul
+                                class="custom-options absolute hidden z-50 w-full mt-1 bg-[#1e1e1e] border border-[#333333] rounded-lg shadow-lg overflow-y-auto max-h-60">
+                                <li class="custom-option px-4 py-2 hover:bg-[#1e5631] text-[#e0e0e0] cursor-pointer transition-colors"
+                                    data-value="">Seçilməyib</li>
+                                <li th:each="choice : ${categories}" th:attr="data-value=${choice.id}"
+                                    th:text="${choice.name}"
+                                    th:classappend="${productForm.categoryId == choice.id} ? ' bg-[#1e5631] text-white selected-option' : ''"
+                                    class="custom-option px-4 py-2 hover:bg-[#1e5631] text-[#e0e0e0] cursor-pointer transition-colors">
+                                    Seçim</li>
+                            </ul>
+                        </div>
+                        <p id="product-category-error" class="hidden mt-1 text-xs text-red-600 dark:text-red-400"
+                            role="alert">Zəhmət olmasa, kateqoriya seçin.</p>
+                        <p th:if="${#lists.isEmpty(categories)}" class="mt-1 text-xs text-red-600 dark:text-red-400">
+                            Hələ kateqoriya əlavə edilməyib. Əvvəlcə kateqoriya yaradın.</p>
+                        <p th:if="${#fields.hasErrors('categoryId')}"
+                            class="mt-1 text-xs text-red-600 dark:text-red-400">Siyahıdan düzgün seçim edin.</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-[#e0e0e0] mb-1">Avtomobil
+                            markası</label>
+                        <div class="custom-select-wrapper relative w-full">
+                            <input type="hidden" id="product-brand" th:field="*{carBrandId}"
+                                class="custom-select-input">
+                            <div
+                                class="custom-select-trigger flex justify-between items-center w-full px-3 py-2 border border-[#333333] bg-[#1e1e1e] rounded-lg text-[#e0e0e0] cursor-pointer">
+                                <span class="selected-text" th:text="${selectedCarBrandName}">Seçilməyib</span>
+                                <svg class="h-4 w-4 text-gray-500 ml-2" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                            <ul
+                                class="custom-options absolute hidden z-50 w-full mt-1 bg-[#1e1e1e] border border-[#333333] rounded-lg shadow-lg overflow-y-auto max-h-60">
+                                <li class="custom-option px-4 py-2 hover:bg-[#1e5631] text-[#e0e0e0] cursor-pointer transition-colors"
+                                    data-value="">Seçilməyib</li>
+                                <li th:each="choice : ${carBrands}" th:attr="data-value=${choice.id}"
+                                    th:text="${choice.name}"
+                                    th:classappend="${productForm.carBrandId == choice.id} ? ' bg-[#1e5631] text-white selected-option' : ''"
+                                    class="custom-option px-4 py-2 hover:bg-[#1e5631] text-[#e0e0e0] cursor-pointer transition-colors">
+                                    Seçim</li>
+                            </ul>
+                        </div>
+                        <p th:if="${#lists.isEmpty(carBrands)}" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            Hələ seçim əlavə edilməyib. Bu sahəni boş saxlamaq olar.</p>
+                        <p th:if="${#fields.hasErrors('carBrandId')}"
+                            class="mt-1 text-xs text-red-600 dark:text-red-400">Siyahıdan düzgün seçim edin.</p>
+                    </div>
+                    <div>
+                        <label for="product-year"
+                            class="block text-sm font-medium text-gray-700 dark:text-[#e0e0e0] mb-1">İstehsal
+                            ili</label>
+                        <input type="text" id="product-year" th:field="*{yearRange}"
+                            class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333333] dark:bg-[#1e1e1e] dark:text-[#e0e0e0] focus:outline-none focus:ring-2 focus:ring-[#1e5631]/50 focus:border-[#1e5631] transition-colors placeholder-gray-400"
+                            maxlength="4" pattern="\d{4}" placeholder="Məsələn: 2024"
+                            title="4 rəqəmdən ibarət il daxil edin (məsələn: 2024)">
+                        <p th:if="${#fields.hasErrors('yearRange')}"
+                            class="mt-1 text-xs text-red-600 dark:text-red-400">İstehsal ili 4 rəqəmdən ibarət olmalıdır.</p>
+                    </div>
+                    <div>
+                        <label for="product-engine"
+                            class="block text-sm font-medium text-gray-700 dark:text-[#e0e0e0] mb-1">Mühərrik</label>
+                        <input type="text" id="product-engine" th:field="*{engine}"
+                            class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333333] dark:bg-[#1e1e1e] dark:text-[#e0e0e0] focus:outline-none focus:ring-2 focus:ring-[#1e5631]/50 focus:border-[#1e5631] transition-colors placeholder-gray-400"
+                            maxlength="255" placeholder="Məsələn: 2.0L">
+                        <p th:if="${#fields.hasErrors('engine')}" class="mt-1 text-xs text-red-600 dark:text-red-400">Bu
+                            sahəni düzgün doldurun.</p>
+                    </div>
+                    <div>
+                        <label for="product-oem-code"
+                            class="block text-sm font-medium text-gray-700 dark:text-[#e0e0e0] mb-1">OEM kodu</label>
+                        <input type="text" id="product-oem-code" th:field="*{oemCode}"
+                            class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333333] dark:bg-[#1e1e1e] dark:text-[#e0e0e0] focus:outline-none focus:ring-2 focus:ring-[#1e5631]/50 focus:border-[#1e5631] transition-colors placeholder-gray-400"
+                            maxlength="255" placeholder="İstehsalçının ehtiyat hissəsi kodu">
+                        <p th:if="${#fields.hasErrors('oemCode')}" class="mt-1 text-xs text-red-600 dark:text-red-400">
+                            Bu sahəni düzgün doldurun.</p>
+                    </div>
+                    <div>
+                        <label for="product-code"
+                            class="block text-sm font-medium text-gray-700 dark:text-[#e0e0e0] mb-1">Məhsul kodu <span class="text-red-500">*</span></label>
+                        <input type="text" id="product-code" th:field="*{code}"
+                            class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333333] dark:bg-[#1e1e1e] dark:text-[#e0e0e0] focus:outline-none focus:ring-2 focus:ring-[#1e5631]/50 focus:border-[#1e5631] transition-colors placeholder-gray-400"
+                            maxlength="255" placeholder="Məsələn: BRK-101" required>
+                        <p th:if="${#fields.hasErrors('code')}" class="mt-1 text-xs text-red-600 dark:text-red-400">Bu
+                            sahəni düzgün doldurun.</p>
+                    </div>
+                    <div>
+                        <label for="product-qty"
+                            class="block text-sm font-medium text-gray-700 dark:text-[#e0e0e0] mb-1">Miqdar <span class="text-red-500">*</span></label>
+                        <input type="number" id="product-qty" th:field="*{stockQuantity}"
+                            class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333333] dark:bg-[#1e1e1e] dark:text-[#e0e0e0] focus:outline-none focus:ring-2 focus:ring-[#1e5631]/50 focus:border-[#1e5631] transition-colors placeholder-gray-400"
+                            min="0" max="2147483647" step="1" required placeholder="0">
+                        <p th:if="${#fields.hasErrors('stockQuantity')}"
+                            class="mt-1 text-xs text-red-600 dark:text-red-400">Miqdar minimum 0 və tam ədəd olmalıdır.</p>
+                    </div>
+                    <div>
+                        <label for="product-price"
+                            class="block text-sm font-medium text-gray-700 dark:text-[#e0e0e0] mb-1">Qiymət
+                            (AZN) <span class="text-red-500">*</span></label>
+                        <input type="number" id="product-price" th:field="*{price}"
+                            class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333333] dark:bg-[#1e1e1e] dark:text-[#e0e0e0] focus:outline-none focus:ring-2 focus:ring-[#1e5631]/50 focus:border-[#1e5631] transition-colors placeholder-gray-400"
+                            min="0.01" step="0.01" required placeholder="0.01">
+                        <p th:if="${#fields.hasErrors('price')}" class="mt-1 text-xs text-red-600 dark:text-red-400">Qiymət minimum 0.01 AZN və maksimum 2 onluq rəqəmli olmalıdır.</p>
+                    </div>
+                    <label class="flex items-center gap-3 text-sm text-gray-700 dark:text-[#e0e0e0]">
+                        <input type="checkbox" th:field="*{isActive}" class="h-4 w-4 accent-[#1e5631]">
+                        <span>Aktiv — ana səhifədə göstər</span>
+                    </label>
+                </form>
+            </div>
+            <div
+                class="px-6 py-4 border-t border-gray-100 dark:border-[#333333] flex justify-end gap-3 bg-gray-50/50 dark:bg-[#1e1e1e]/50">
+                <button id="btn-cancel-modal" type="button" onclick="closeProductModal()"
+                    class="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-[#e0e0e0] bg-white dark:bg-[#333333] border border-gray-300 dark:border-[#333333] rounded-xl hover:bg-gray-50 dark:hover:bg-[#444444] transition-colors focus:ring-2 focus:ring-gray-200">Ləğv
+                    et</button>
+                <button id="btn-save-modal" type="submit" form="product-form"
+                    class="px-5 py-2.5 text-sm font-medium text-white bg-primary rounded-xl hover:bg-primary/90 transition-colors focus:ring-2 focus:ring-primary/20 shadow-sm">Yadda
+                    saxla</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Role Preview Modal -->
+    <div id="role-preview-modal" class="fixed inset-0 z-50 hidden items-center justify-center">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeRolePreviewModal()">
+        </div>
+
+        <!-- Modal Content -->
+        <div
+            class="relative role-preview-modal rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden flex flex-col max-h-[85vh] z-10">
+            <!-- Header -->
+            <div class="role-preview-modal-header px-6 py-4 border-b flex justify-between items-center">
+                <div>
+                    <h3 id="role-preview-modal-title" class="text-xl font-bold">Rol Önizləməsi: [Rol Adı]</h3>
+                    <p class="role-preview-info-text text-xs mt-1">Bu önizləmə sırf məlumat xarakterlidir və cari
+                        istifadəçi sessiyanızı dəyişmir.</p>
+                </div>
+                <button type="button" onclick="closeRolePreviewModal()"
+                    class="role-preview-close-btn p-1.5 rounded-lg transition-colors">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Body: Modules List -->
+            <div class="role-preview-modal-body px-6 py-5 overflow-y-auto flex-1">
+                <div id="role-preview-modules-container" class="space-y-3">
+                    <!-- Populated dynamically via openRolePreviewModal(roleName) -->
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="role-preview-modal-footer px-6 py-4 border-t flex justify-end">
+                <button type="button" onclick="closeRolePreviewModal()"
+                    class="btn-close-role-preview px-5 py-2.5 text-sm font-semibold rounded-xl transition-all shadow-sm">
+                    Önizləməni Bağla
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+
+
+        function approveOrder(buttonId, statusId) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                icon: 'success',
+                title: 'Sifariş uğurla təsdiqləndi!'
+            });
+            document.getElementById(statusId).innerHTML = '<span class="bg-green-100 text-green-800 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Təsdiqləndi</span>';
+            const btn = document.getElementById(buttonId);
+            if (btn) btn.remove();
+        }
+
+        function closeProductModal() {
+            const modal = document.getElementById('product-modal');
+            if (modal && modal.dataset.closeUrl) window.location.assign(modal.dataset.closeUrl);
+        }
+
+        function activateAdminTab(targetId) {
+            const target = document.getElementById(targetId);
+            if (!target || !target.classList.contains('tab-content')) return;
+
+            document.querySelectorAll('.tab-content').forEach(section => {
+                section.classList.toggle('hidden', section.id !== targetId);
+                section.classList.toggle('block', section.id === targetId);
+            });
+            document.querySelectorAll('.tab-link').forEach(link => {
+                const active = link.getAttribute('href') === '#' + targetId;
+                const activeClasses = ['bg-primary/10', 'dark:bg-primary', 'text-primary', 'dark:text-[#e0e0e0]', 'dark:shadow-[0_0_15px_rgba(30,86,49,0.5)]'];
+                const inactiveClasses = ['text-gray-600', 'dark:text-gray-400', 'hover:text-gray-900', 'dark:hover:text-white', 'hover:bg-gray-100', 'dark:hover:bg-white/5'];
+                activeClasses.forEach(cls => link.classList.toggle(cls, active));
+                inactiveClasses.forEach(cls => link.classList.toggle(cls, !active));
+                const icon = link.querySelector('.tab-icon');
+                if (icon) {
+                    icon.classList.toggle('text-primary', active);
+                    icon.classList.toggle('dark:text-[#e0e0e0]', active);
+                    icon.classList.toggle('text-gray-600', !active);
+                    icon.classList.toggle('dark:text-gray-400', !active);
+                }
+                if (active) {
+                    const title = document.getElementById('admin-page-title');
+                    if (title) title.textContent = link.textContent.trim();
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialHash = window.location.hash.slice(1);
+            if (initialHash === 'b2b-analytics' || initialHash === 'analytics') {
+                window.location.replace('/admin/analytics');
+                return;
+            }
+            if (initialHash === 'team-permissions' || initialHash === 'team') {
+                window.location.replace('/admin/team');
+                return;
+            }
+            document.querySelectorAll('.tab-link').forEach(link => {
+                link.addEventListener('click', event => {
+                    event.preventDefault();
+                    const targetId = link.getAttribute('href').slice(1);
+                    activateAdminTab(targetId);
+                    history.replaceState(null, '', '#' + targetId);
+                });
+            });
+            const modal = document.getElementById('product-modal');
+            const modalOpen = modal && !modal.classList.contains('hidden');
+            const hash = window.location.hash.slice(1);
+            const hashTarget = hash ? document.getElementById(hash) : null;
+            activateAdminTab(modalOpen ? 'products' :
+                (hashTarget && hashTarget.classList.contains('tab-content') ? hash : document.body.dataset.adminTab || 'dashboard'));
+
+            const form = document.getElementById('product-form');
+            const imageInput = document.getElementById('product-image');
+            const imageError = document.getElementById('product-image-error');
+            const categoryInput = document.getElementById('product-category');
+            const categoryError = document.getElementById('product-category-error');
+            const categoryWrapper = document.getElementById('product-category-wrapper');
+            const categoryTrigger = categoryWrapper ? categoryWrapper.querySelector('.custom-select-trigger') : null;
+            const priceInput = document.getElementById('product-price');
+            const qtyInput = document.getElementById('product-qty');
+
+            function validImageSize() {
+                const file = imageInput && imageInput.files[0];
+                const tooLarge = file && file.size > 1024 * 1024;
+                if (imageError) {
+                    imageError.textContent = tooLarge ? 'Şəkil maksimum 1 MB ola bilər.' : '';
+                    imageError.classList.toggle('hidden', !tooLarge);
+                }
+                if (imageInput) imageInput.setCustomValidity(tooLarge ? 'Maksimum 1 MB şəkil seçin.' : '');
+                return !tooLarge;
+            }
+
+            function validateCategory() {
+                const val = categoryInput ? categoryInput.value : '';
+                const isValid = val && val.trim() !== '' && parseInt(val, 10) > 0;
+                if (!isValid) {
+                    if (categoryError) categoryError.classList.remove('hidden');
+                    if (categoryTrigger) categoryTrigger.classList.add('border-red-500', 'ring-2', 'ring-red-500/50');
+                    return false;
+                } else {
+                    if (categoryError) categoryError.classList.add('hidden');
+                    if (categoryTrigger) categoryTrigger.classList.remove('border-red-500', 'ring-2', 'ring-red-500/50');
+                    return true;
+                }
+            }
+
+            if (imageInput) imageInput.addEventListener('change', validImageSize);
+            if (categoryInput) categoryInput.addEventListener('change', validateCategory);
+
+            if (form) {
+                // Əgər yeni formadırsa və qiymət sahəsində yanlış 0 qalıbsa, təmizlə
+                const isNewProduct = !form.getAttribute('action') || form.getAttribute('action').endsWith('/admin/products');
+                const hasErrors = form.querySelector('[role="alert"]') !== null;
+                if (isNewProduct && !hasErrors) {
+                    if (priceInput && (priceInput.value === '0' || priceInput.value === '0.00')) priceInput.value = '';
+                }
+
+                form.addEventListener('submit', event => {
+                    const isCatValid = validateCategory();
+                    const isImgValid = validImageSize();
+                    if (!isCatValid || !isImgValid) {
+                        event.preventDefault();
+                        if (!isCatValid && categoryTrigger) {
+                            categoryTrigger.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        } else {
+                            form.reportValidity();
+                        }
+                    }
+                });
+
+                form.addEventListener('reset', () => {
+                    setTimeout(() => {
+                        if (priceInput && (priceInput.value === '0' || priceInput.value === '0.00')) priceInput.value = '';
+                        if (categoryError) categoryError.classList.add('hidden');
+                        if (categoryTrigger) categoryTrigger.classList.remove('border-red-500', 'ring-2', 'ring-red-500/50');
+                    }, 0);
+                });
+            }
+            document.addEventListener('keydown', event => {
+                if (event.key === 'Escape' && modal && !modal.classList.contains('hidden')) closeProductModal();
+            });
+
+            // Theme toggle logic
+            var themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+            var themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+
+            if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                themeToggleLightIcon.classList.remove('hidden');
+            } else {
+                themeToggleDarkIcon.classList.remove('hidden');
+            }
+
+            var themeToggleBtn = document.getElementById('theme-toggle');
+
+            if (themeToggleBtn) {
+                themeToggleBtn.addEventListener('click', function () {
+                    themeToggleDarkIcon.classList.toggle('hidden');
+                    themeToggleLightIcon.classList.toggle('hidden');
+
+                    if (localStorage.getItem('color-theme')) {
+                        if (localStorage.getItem('color-theme') === 'light') {
+                            document.documentElement.classList.add('dark');
+                            document.documentElement.classList.remove('light-mode');
+                            localStorage.setItem('color-theme', 'dark');
+                        } else {
+                            document.documentElement.classList.remove('dark');
+                            document.documentElement.classList.add('light-mode');
+                            localStorage.setItem('color-theme', 'light');
+                        }
+                    } else {
+                        if (document.documentElement.classList.contains('dark')) {
+                            document.documentElement.classList.remove('dark');
+                            document.documentElement.classList.add('light-mode');
+                            localStorage.setItem('color-theme', 'light');
+                        } else {
+                            document.documentElement.classList.add('dark');
+                            document.documentElement.classList.remove('light-mode');
+                            localStorage.setItem('color-theme', 'dark');
+                        }
+                    }
+                });
+            }
+
+        });
+
+        // Update Order Status Logic
+        function updateOrderStatus(orderId) {
+            const select = document.getElementById('select-status-' + orderId);
+            if (!select) return;
+
+            const selectedValue = select.value;
+            const selectedText = select.closest('.custom-select-wrapper').querySelector('.selected-text').textContent;
+
+            const statusContainer = document.getElementById('status-' + orderId);
+            if (!statusContainer) return;
+
+            let colorClass = '';
+
+            switch (selectedValue) {
+                case 'PENDING':
+                case 'GÖZLƏYİR':
+                    colorClass = 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-700/50';
+                    break;
+                case 'PROCESSING':
+                case 'HAZIRLANIR':
+                    colorClass = 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700/50';
+                    break;
+                case 'SHIPPED':
+                case 'KARQOYA_VERİLDİ':
+                    colorClass = 'bg-indigo-100 text-indigo-800 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-400 dark:border-indigo-700/50';
+                    break;
+                case 'DELIVERED':
+                case 'ÇATDIRILDI':
+                    colorClass = 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700/50';
+                    break;
+                case 'CANCELLED':
+                case 'LƏĞV_EDİLDİ':
+                    colorClass = 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-700/50';
+                    break;
+            }
+
+            statusContainer.innerHTML = `<span class="${colorClass} text-[10px] font-bold px-2.5 py-1 rounded-full border uppercase tracking-wider transition-colors">${selectedText}</span>`;
+
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Sifariş statusu uğurla yeniləndi!',
+                showConfirmButton: false,
+                timer: 3000
+            });
+        }
+
+
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const roleSelects = document.querySelectorAll('.role-select');
+            roleSelects.forEach(select => {
+                select.addEventListener('change', function () {
+                    const roleContainer = this.closest('tr').querySelector('td:nth-child(3)');
+                    const newRole = this.value;
+                    let colorClass = '';
+
+                    switch (newRole) {
+                        case 'SUPER_ADMIN':
+                            colorClass = 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-500/20';
+                            break;
+                        case 'ADMIN':
+                            colorClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-500/20';
+                            break;
+                        case 'USER':
+                            colorClass = 'bg-gray-100 text-gray-800 dark:bg-[#1e1e1e] dark:text-[#e0e0e0] border-gray-200 dark:border-[#333333]';
+                            break;
+                    }
+
+                    roleContainer.innerHTML = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold border ${colorClass}">${newRole}</span>`;
+
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: 'İstifadəçi rolu yeniləndi!',
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+                });
+            });
+
+            // Auto update order status
+            document.querySelectorAll('input[id^="select-status-"]').forEach(input => {
+                input.addEventListener('change', function () {
+                    const orderId = this.id.split('select-status-')[1];
+                    if (orderId && typeof updateOrderStatus === 'function') {
+                        updateOrderStatus(orderId);
+                    }
+                });
+            });
+        });
+
+
+        // Static rolePermissions script removed (moved to dedicated /admin/team)
+
+        // ==========================================
+        // Role Preview Modal Logic
+        // ==========================================
+        const rolePreviewData = {
+            'Super Admin': {
+                'Sifarişlər': ['Baxış', 'Redaktə', 'Təsdiq', 'İxrac'],
+                'Müştəri şirkətləri': ['Baxış', 'Redaktə', 'Təsdiq', 'İxrac'],
+                'Qiymət cədvəlləri': ['Baxış', 'Redaktə', 'Təsdiq', 'İxrac'],
+                'Ödənişlər (Kassa)': ['Baxış', 'Redaktə', 'Təsdiq', 'İxrac'],
+                'Məhsullar': ['Baxış', 'Redaktə', 'Təsdiq', 'İxrac'],
+                'Anbar və Stok': ['Baxış', 'Redaktə', 'Təsdiq', 'İxrac'],
+                'Hesabatlar': ['Baxış', 'Redaktə', 'Təsdiq', 'İxrac'],
+                'Komanda və icazələr': ['Baxış', 'Redaktə', 'Təsdiq', 'İxrac']
+            },
+            'Satış Meneceri': {
+                'Sifarişlər': ['Baxış', 'Redaktə', 'İxrac'],
+                'Müştəri şirkətləri': ['Baxış', 'Redaktə'],
+                'Qiymət cədvəlləri': ['Baxış', 'İxrac'],
+                'Ödənişlər (Kassa)': ['Baxış'],
+                'Məhsullar': ['Baxış'],
+                'Anbar və Stok': ['Baxış'],
+                'Hesabatlar': [],
+                'Komanda və icazələr': []
+            },
+            'Anbar Müdiri': {
+                'Sifarişlər': ['Baxış', 'Təsdiq'],
+                'Müştəri şirkətləri': [],
+                'Qiymət cədvəlləri': [],
+                'Ödənişlər (Kassa)': [],
+                'Məhsullar': ['Baxış', 'Redaktə', 'İxrac'],
+                'Anbar və Stok': ['Baxış', 'Redaktə', 'Təsdiq', 'İxrac'],
+                'Hesabatlar': ['Baxış', 'İxrac'],
+                'Komanda və icazələr': []
+            },
+            'Baş Kassir': {
+                'Sifarişlər': ['Baxış', 'İxrac'],
+                'Müştəri şirkətləri': ['Baxış'],
+                'Qiymət cədvəlləri': ['Baxış'],
+                'Ödənişlər (Kassa)': ['Baxış', 'Redaktə', 'Təsdiq', 'İxrac'],
+                'Məhsullar': ['Baxış'],
+                'Anbar və Stok': [],
+                'Hesabatlar': ['Baxış', 'İxrac'],
+                'Komanda və icazələr': []
+            }
+        };
+
+        function openRolePreviewModal(roleName) {
+            const modal = document.getElementById('role-preview-modal');
+            if (!modal) return;
+
+            // Dinamik başlıq: 'Rol Önizləməsi: [Rol Adı]'
+            const titleEl = document.getElementById('role-preview-modal-title');
+            if (titleEl) {
+                titleEl.textContent = `Rol Önizləməsi: ${roleName}`;
+            }
+
+            // Modul siyahısının doldurulması
+            const container = document.getElementById('role-preview-modules-container');
+            if (container) {
+                const modules = [
+                    'Sifarişlər',
+                    'Müştəri şirkətləri',
+                    'Qiymət cədvəlləri',
+                    'Ödənişlər (Kassa)',
+                    'Məhsullar',
+                    'Anbar və Stok',
+                    'Hesabatlar',
+                    'Komanda və icazələr'
+                ];
+
+                const roleData = rolePreviewData[roleName] || rolePreviewData['Satış Meneceri'];
+                const badgeMap = {
+                    'Baxış': 'perm-badge-view',
+                    'Redaktə': 'perm-badge-edit',
+                    'Təsdiq': 'perm-badge-approve',
+                    'İxrac': 'perm-badge-export'
+                };
+
+                container.innerHTML = modules.map(mod => {
+                    const perms = roleData[mod] || [];
+                    let badgesHtml = '';
+                    if (perms.length > 0) {
+                        badgesHtml = perms.map(p => {
+                            const cls = badgeMap[p] || 'perm-badge-view';
+                            return `<span class="${cls} text-xs font-semibold px-2.5 py-1 rounded-md tracking-wide">${p}</span>`;
+                        }).join(' ');
+                    } else {
+                        badgesHtml = '<span class="text-xs text-gray-400 dark:text-gray-500 font-medium italic">Giriş hüququ yoxdur</span>';
+                    }
+
+                    return `
+                        <div class="role-preview-module-card p-3.5 rounded-xl flex items-center justify-between transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="w-2.5 h-2.5 rounded-full ${perms.length > 0 ? 'bg-[#1e5631]' : 'bg-gray-400 dark:bg-gray-600'}"></div>
+                                <span class="module-title font-semibold text-sm">${mod}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 flex-wrap justify-end">
+                                ${badgesHtml}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            modal.classList.remove('hidden');
+            modal.style.display = 'flex';
+        }
+
+        function closeRolePreviewModal() {
+            const modal = document.getElementById('role-preview-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.style.display = 'none';
+            }
+        }
+
+        // ESC düyməsi ilə modalın bağlanması
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                closeRolePreviewModal();
+            }
+        });
+    </script>
+    <!-- Safe payment chart daily data serialization for Chart.js -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        window.__paymentChartDailyData = /*[[${dashboard != null and dashboard.paymentChart != null ? dashboard.paymentChart.points : null}]]*/ [];
+        /*]]>*/
+    </script>
+    <script th:src="@{/vendor/chart.umd.min.js}" src="/vendor/chart.umd.min.js"></script>
+    <script th:src="@{/js/admin-payment-chart.js}" src="/js/admin-payment-chart.js"></script>
+</body>
+
+</html>

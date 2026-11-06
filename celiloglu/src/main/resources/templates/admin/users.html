@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="az" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cəliloğlu - İstifadəçilər</title>
+    <meta name="description" content="Cəliloğlu Admin Panel - İstifadəçi idarəetməsi">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e5631',
+                        secondary: '#3b82f6',
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light-mode');
+        } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light-mode');
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="/css/style.css">
+    <script th:src="@{/js/script.js}" src="/js/script.js" defer></script>
+</head>
+
+<body class="flex h-screen overflow-hidden text-gray-800 dark:text-[#e0e0e0] bg-gray-50 dark:bg-[#121212] transition-colors">
+
+    <!-- Sidebar Fragment -->
+    <aside th:replace="~{fragments/admin-sidebar :: sidebar('users')}"></aside>
+
+    <!-- Main Wrapper -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50 dark:bg-[#121212] transition-colors">
+
+        <!-- Top Header -->
+        <header class="h-20 bg-white dark:bg-[#121212] border-b border-gray-200 dark:border-[#333333] flex items-center justify-between px-8 flex-shrink-0 z-10 transition-colors duration-300 shadow-sm dark:shadow-lg">
+            <h1 class="text-xl font-bold text-gray-800 dark:text-[#e0e0e0] transition-colors duration-300">İstifadəçilər</h1>
+            <div class="flex items-center gap-6">
+
+                <!-- Theme Toggle -->
+                <button id="theme-toggle" type="button"
+                    class="text-gray-500 dark:text-indigo-100 hover:text-primary dark:hover:text-white flex flex-col items-center transition-all duration-300 group dark:hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] focus:outline-none">
+                    <svg id="theme-toggle-dark-icon" class="hidden h-6 w-6 group-hover:scale-110 transition-transform"
+                        fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                    </svg>
+                    <svg id="theme-toggle-light-icon" class="hidden h-6 w-6 group-hover:scale-110 transition-transform"
+                        fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                            fill-rule="evenodd" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="text-[11px] font-medium mt-1">Rejim</span>
+                </button>
+
+                <!-- Profile Block Fragment -->
+                <div th:replace="~{fragments/admin-header :: profile}"></div>
+            </div>
+        </header>
+
+        <!-- Scrollable Content -->
+        <main class="flex-1 overflow-y-auto p-8">
+            <div class="max-w-6xl mx-auto space-y-8">
+
+                <!-- Success / Error Messages -->
+                <p th:if="${userSuccess != null}" th:text="${userSuccess}" role="status"
+                    class="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800 dark:border-green-800 dark:bg-green-900/20 dark:text-green-300">
+                </p>
+                <p th:if="${userError != null}" th:text="${userError}" role="alert"
+                    class="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
+                </p>
+
+                <!-- Form Card: Add or Edit -->
+                <div class="bg-white dark:bg-[#1e1e1e] rounded-2xl border border-gray-100 dark:border-[#333333] shadow-sm dark:shadow-[0_0_15px_rgba(255,255,255,0.05)] p-6 transition-colors">
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-[#e0e0e0] mb-4"
+                        th:text="${isEditMode} ? 'İstifadəçi məlumatlarını redaktə et' : 'Yeni istifadəçi yarat'">
+                        Yeni istifadəçi yarat
+                    </h2>
+
+                    <!-- CREATE FORM -->
+                    <form th:if="${!isEditMode}" method="post" th:action="@{/admin/users}" th:object="${createForm}">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label for="create-username" class="block text-sm font-semibold text-gray-700 dark:text-[#e0e0e0] mb-1">İstifadəçi adı *</label>
+                                <input id="create-username" type="text" th:field="*{username}" required
+                                    class="w-full rounded-xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#121212] px-4 py-2.5 text-sm text-gray-900 dark:text-[#e0e0e0] focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors"
+                                    placeholder="Məsələn: tural_h">
+                            </div>
+                            <div>
+                                <label for="create-email" class="block text-sm font-semibold text-gray-700 dark:text-[#e0e0e0] mb-1">E-poçt ünvanı *</label>
+                                <input id="create-email" type="email" th:field="*{email}" required
+                                    class="w-full rounded-xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#121212] px-4 py-2.5 text-sm text-gray-900 dark:text-[#e0e0e0] focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors"
+                                    placeholder="ad@shebeke.az">
+                            </div>
+                            <div>
+                                <label for="create-password" class="block text-sm font-semibold text-gray-700 dark:text-[#e0e0e0] mb-1">Şifrə * (min. 12 simvol)</label>
+                                <input id="create-password" type="password" th:field="*{password}" required minlength="12" autocomplete="new-password"
+                                    class="w-full rounded-xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#121212] px-4 py-2.5 text-sm text-gray-900 dark:text-[#e0e0e0] focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors"
+                                    placeholder="Ən azı 12 simvol">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label for="create-firstName" class="block text-sm font-semibold text-gray-700 dark:text-[#e0e0e0] mb-1">Ad</label>
+                                <input id="create-firstName" type="text" th:field="*{firstName}"
+                                    class="w-full rounded-xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#121212] px-4 py-2.5 text-sm text-gray-900 dark:text-[#e0e0e0] focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors"
+                                    placeholder="Ad (istəyə bağlı)">
+                            </div>
+                            <div>
+                                <label for="create-lastName" class="block text-sm font-semibold text-gray-700 dark:text-[#e0e0e0] mb-1">Soyad</label>
+                                <input id="create-lastName" type="text" th:field="*{lastName}"
+                                    class="w-full rounded-xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#121212] px-4 py-2.5 text-sm text-gray-900 dark:text-[#e0e0e0] focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors"
+                                    placeholder="Soyad (istəyə bağlı)">
+                            </div>
+                            <div>
+                                <label for="create-phone" class="block text-sm font-semibold text-gray-700 dark:text-[#e0e0e0] mb-1">Telefon</label>
+                                <input id="create-phone" type="text" th:field="*{phone}"
+                                    class="w-full rounded-xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#121212] px-4 py-2.5 text-sm text-gray-900 dark:text-[#e0e0e0] focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors"
+                                    placeholder="+994 (istəyə bağlı)">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label for="create-companyName" class="block text-sm font-semibold text-gray-700 dark:text-[#e0e0e0] mb-1">Şirkət adı</label>
+                                <input id="create-companyName" type="text" th:field="*{companyName}"
+                                    class="w-full rounded-xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#121212] px-4 py-2.5 text-sm text-gray-900 dark:text-[#e0e0e0] focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors"
+                                    placeholder="Şirkət (istəyə bağlı)">
+                            </div>
+                            <div>
+                                <label for="create-tin" class="block text-sm font-semibold text-gray-700 dark:text-[#e0e0e0] mb-1">VÖEN</label>
+                                <input id="create-tin" type="text" th:field="*{tin}"
+                                    class="w-full rounded-xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#121212] px-4 py-2.5 text-sm text-gray-900 dark:text-[#e0e0e0] focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors"
+                                    placeholder="VÖEN (istəyə bağlı)">
+                            </div>
+                            <div>
+                                <label for="create-address" class="block text-sm font-semibold text-gray-700 dark:text-[#e0e0e0] mb-1">Ünvan</label>
+                                <input id="create-address" type="text" th:field="*{address}"
+                                    class="w-full rounded-xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#121212] px-4 py-2.5 text-sm text-gray-900 dark:text-[#e0e0e0] focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors"
+                                    placeholder="Ünvan (istəyə bağlı)">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <button type="submit"
+                                class="bg-gray-900 dark:bg-primary text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-gray-800 dark:hover:bg-primary/90 transition-colors shadow-sm flex items-center gap-2 focus:ring-4 focus:ring-gray-200">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                <span>İstifadəçi yarat</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- EDIT FORM -->
+                    <form th:if="${isEditMode}" method="post" th:action="@{/admin/users/{id}(id=${editingUserId})}" th:object="${updateForm}">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="edit-username" class="block text-sm font-semibold text-gray-700 dark:text-[#e0e0e0] mb-1">İstifadəçi adı *</label>
+                                <input id="edit-username" type="text" th:field="*{username}" required
+                                    class="w-full rounded-xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#121212] px-4 py-2.5 text-sm text-gray-900 dark:text-[#e0e0e0] focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors">
+                            </div>
+                            <div>
+                                <label for="edit-email" class="block text-sm font-semibold text-gray-700 dark:text-[#e0e0e0] mb-1">E-poçt ünvanı *</label>
+                                <input id="edit-email" type="email" th:field="*{email}" required
+                                    class="w-full rounded-xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#121212] px-4 py-2.5 text-sm text-gray-900 dark:text-[#e0e0e0] focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label for="edit-firstName" class="block text-sm font-semibold text-gray-700 dark:text-[#e0e0e0] mb-1">Ad</label>
+                                <input id="edit-firstName" type="text" th:field="*{firstName}"
+                                    class="w-full rounded-xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#121212] px-4 py-2.5 text-sm text-gray-900 dark:text-[#e0e0e0] focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors">
+                            </div>
+                            <div>
+                                <label for="edit-lastName" class="block text-sm font-semibold text-gray-700 dark:text-[#e0e0e0] mb-1">Soyad</label>
+                                <input id="edit-lastName" type="text" th:field="*{lastName}"
+                                    class="w-full rounded-xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#121212] px-4 py-2.5 text-sm text-gray-900 dark:text-[#e0e0e0] focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors">
+                            </div>
+                            <div>
+                                <label for="edit-phone" class="block text-sm font-semibold text-gray-700 dark:text-[#e0e0e0] mb-1">Telefon</label>
+                                <input id="edit-phone" type="text" th:field="*{phone}"
+                                    class="w-full rounded-xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#121212] px-4 py-2.5 text-sm text-gray-900 dark:text-[#e0e0e0] focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label for="edit-companyName" class="block text-sm font-semibold text-gray-700 dark:text-[#e0e0e0] mb-1">Şirkət adı</label>
+                                <input id="edit-companyName" type="text" th:field="*{companyName}"
+                                    class="w-full rounded-xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#121212] px-4 py-2.5 text-sm text-gray-900 dark:text-[#e0e0e0] focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors">
+                            </div>
+                            <div>
+                                <label for="edit-tin" class="block text-sm font-semibold text-gray-700 dark:text-[#e0e0e0] mb-1">VÖEN</label>
+                                <input id="edit-tin" type="text" th:field="*{tin}"
+                                    class="w-full rounded-xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#121212] px-4 py-2.5 text-sm text-gray-900 dark:text-[#e0e0e0] focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors">
+                            </div>
+                            <div>
+                                <label for="edit-address" class="block text-sm font-semibold text-gray-700 dark:text-[#e0e0e0] mb-1">Ünvan</label>
+                                <input id="edit-address" type="text" th:field="*{address}"
+                                    class="w-full rounded-xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#121212] px-4 py-2.5 text-sm text-gray-900 dark:text-[#e0e0e0] focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <button type="submit"
+                                class="bg-gray-900 dark:bg-primary text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-gray-800 dark:hover:bg-primary/90 transition-colors shadow-sm flex items-center gap-2 focus:ring-4 focus:ring-gray-200">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span>Yadda saxla</span>
+                            </button>
+                            <a th:href="@{/admin/users}"
+                                class="text-sm font-semibold text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333333] hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                Ləğv et
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- User List Table Card -->
+                <div class="flex items-center justify-between mb-2">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-900 dark:text-[#e0e0e0]">İstifadəçi siyahısı</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400"
+                            th:text="${userPage != null ? userPage.totalElements : 0} + ' istifadəçi'">0 istifadəçi</p>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-[#1e1e1e] rounded-2xl border border-gray-100 dark:border-[#333333] shadow-sm dark:shadow-[0_0_15px_rgba(255,255,255,0.05)] overflow-hidden transition-colors">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50/80 dark:bg-[#1e1e1e] border-b border-gray-100 dark:border-[#333333] text-xs font-semibold text-gray-500 dark:text-[#e0e0e0] uppercase tracking-wider transition-colors">
+                                    <th class="px-6 py-4">İstifadəçi adı</th>
+                                    <th class="px-6 py-4">E-poçt</th>
+                                    <th class="px-6 py-4">Ad və Soyad</th>
+                                    <th class="px-6 py-4 text-center">Rol</th>
+                                    <th class="px-6 py-4 text-center">Vəziyyət</th>
+                                    <th class="px-6 py-4 text-right">Əməliyyatlar</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-[#333333] text-sm">
+                                <tr th:if="${#lists.isEmpty(users)}">
+                                    <td colspan="6" class="px-6 py-10 text-center text-gray-500 dark:text-gray-400">
+                                        Heç bir istifadəçi tapılmadı.
+                                    </td>
+                                </tr>
+                                <tr th:each="user : ${users}"
+                                    class="hover:bg-gray-50/50 dark:hover:bg-[#1e5631]/10 transition-colors">
+                                    <!-- İstifadəçi adı -->
+                                    <td class="px-6 py-4 font-bold text-gray-900 dark:text-[#e0e0e0]">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs uppercase">
+                                                <span th:text="${#strings.substring(user.username, 0, 1)}">U</span>
+                                            </div>
+                                            <div>
+                                                <span th:text="${user.username}">username</span>
+                                                <p th:if="${user.companyName != null}" class="text-xs text-gray-400 font-normal" th:text="${user.companyName}">Şirkət</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <!-- E-poçt -->
+                                    <td class="px-6 py-4 text-gray-600 dark:text-[#e0e0e0]" th:text="${user.email}">
+                                        user@example.com
+                                    </td>
+                                    <!-- Ad və Soyad -->
+                                    <td class="px-6 py-4 text-gray-700 dark:text-[#e0e0e0]">
+                                        <span th:text="${(user.firstName != null ? user.firstName : '') + ' ' + (user.lastName != null ? user.lastName : '')}">Ad Soyad</span>
+                                        <span th:if="${user.firstName == null and user.lastName == null}" class="text-gray-400 italic">-</span>
+                                        <p th:if="${user.phone != null}" class="text-xs text-gray-400" th:text="${user.phone}">+994...</p>
+                                    </td>
+                                    <!-- Mövcud Rol (Yalnız məlumat kimi) -->
+                                    <td class="px-6 py-4 text-center">
+                                        <span th:if="${user.role == 'SUPER_ADMIN'}"
+                                            class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20"
+                                            th:text="${user.roleDisplayName ?: 'Super Admin'}">Super Admin</span>
+                                        <span th:if="${user.role == 'ADMIN'}"
+                                            class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-[#2ecc71] border border-emerald-200 dark:border-emerald-800/60"
+                                            th:text="${user.roleDisplayName ?: 'Admin'}">Admin</span>
+                                        <span th:if="${user.role == 'CASHIER'}"
+                                            class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
+                                            th:text="${user.roleDisplayName ?: 'Kassir'}">Kassir</span>
+                                        <span th:if="${user.role == 'WAREHOUSE_MANAGER'}"
+                                            class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20"
+                                            th:text="${user.roleDisplayName ?: 'Anbar Müdiri'}">Anbar Müdiri</span>
+                                        <span th:if="${user.role == 'USER'}"
+                                            class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-gray-100 text-gray-800 dark:bg-white/10 dark:text-[#e0e0e0] border border-gray-200 dark:border-[#333333]"
+                                            th:text="${user.roleDisplayName ?: 'Müştəri'}">Müştəri</span>
+                                        <span th:if="${user.role == null or (user.role != 'SUPER_ADMIN' and user.role != 'ADMIN' and user.role != 'CASHIER' and user.role != 'WAREHOUSE_MANAGER' and user.role != 'USER')}"
+                                            class="text-xs font-medium text-gray-400 dark:text-gray-500">—</span>
+                                    </td>
+                                    <!-- Aktiv/Deaktiv Vəziyyəti -->
+                                    <td class="px-6 py-4 text-center">
+                                        <span th:if="${user.isActive}"
+                                            class="rounded-full px-2.5 py-1 text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">Aktiv</span>
+                                        <span th:if="${!user.isActive}"
+                                            class="rounded-full px-2.5 py-1 text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">Deaktiv</span>
+                                    </td>
+                                    <!-- Əməliyyatlar -->
+                                    <td class="px-6 py-4 text-right">
+                                        <!-- Əməliyyat düymələri (SUPER_ADMIN üçün hamısı, ADMIN üçün yalnız USER rolu) -->
+                                        <div th:if="${isSuperAdmin or user.role == 'USER'}" class="flex justify-end items-center gap-2">
+                                            <!-- Redaktə -->
+                                            <a th:href="@{/admin/users/{id}/edit(id=${user.id})}"
+                                                class="p-2 text-primary hover:bg-primary/10 dark:text-[#2ecc71] dark:hover:bg-[#1e5631]/20 rounded-lg transition-colors border border-transparent hover:border-primary/20"
+                                                title="Redaktə et" aria-label="İstifadəçini redaktə et">
+                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                </svg>
+                                            </a>
+                                            <!-- Aktivləşdirmə (Deaktivdirsə) -->
+                                            <form th:if="${!user.isActive}" method="post"
+                                                th:action="@{/admin/users/{id}/activate(id=${user.id})}" class="inline">
+                                                <button type="submit"
+                                                    class="p-2 text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-500/20 rounded-lg transition-colors border border-transparent hover:border-green-100"
+                                                    title="Aktivləşdir" aria-label="İstifadəçini aktivləşdir">
+                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                            <!-- Deaktivləşdirmə (Aktivdirsə və SUPER_ADMIN deyilsə) -->
+                                            <form th:if="${user.isActive and user.role != 'SUPER_ADMIN'}" method="post"
+                                                th:action="@{/admin/users/{id}/deactivate(id=${user.id})}" class="inline"
+                                                onsubmit="return confirm('Bu istifadəçini deaktiv etmək istədiyinizə əminsiniz?');">
+                                                <button type="submit"
+                                                    class="p-2 text-yellow-600 hover:bg-yellow-50 dark:text-yellow-400 dark:hover:bg-yellow-500/20 rounded-lg transition-colors border border-transparent hover:border-yellow-100"
+                                                    title="Deaktiv et" aria-label="İstifadəçini deaktiv et">
+                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        </div>
+
+                                        <!-- ADMIN operatoruna işçi və SUPER_ADMIN hesabları üçün "Yalnız baxış" -->
+                                        <div th:if="${!isSuperAdmin and user.role != 'USER'}" class="flex justify-end items-center">
+                                            <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-lg bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-gray-400">
+                                                Yalnız baxış
+                                            </span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div th:if="${userPage != null and userPage.totalPages > 1}"
+                        class="px-6 py-4 border-t border-gray-100 dark:border-[#333333] flex items-center justify-between">
+                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                            Səhifə <span class="font-semibold text-gray-800 dark:text-white" th:text="${userPage.number + 1}">1</span> / <span th:text="${userPage.totalPages}">1</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <!-- Əvvəlki -->
+                            <a th:if="${!userPage.first}" th:href="@{/admin/users(page=${userPage.number - 1})}"
+                                class="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 dark:border-[#333333] text-gray-700 dark:text-[#e0e0e0] hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                Əvvəlki
+                            </a>
+                            <!-- Səhifə nömrələri -->
+                            <th:block th:each="p : ${#numbers.sequence(0, userPage.totalPages - 1)}">
+                                <a th:href="@{/admin/users(page=${p})}"
+                                    th:text="${p + 1}"
+                                    class="px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors"
+                                    th:classappend="${p == userPage.number} ? ' bg-primary text-white border-primary' : ' border-gray-200 dark:border-[#333333] text-gray-700 dark:text-[#e0e0e0] hover:bg-gray-50 dark:hover:bg-white/5'">
+                                    1
+                                </a>
+                            </th:block>
+                            <!-- Növbəti -->
+                            <a th:if="${!userPage.last}" th:href="@{/admin/users(page=${userPage.number + 1})}"
+                                class="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 dark:border-[#333333] text-gray-700 dark:text-[#e0e0e0] hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                Növbəti
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Script -->
+    <script th:src="@{/js/theme.js}" src="/js/theme.js"></script>
+</body>
+
+</html>

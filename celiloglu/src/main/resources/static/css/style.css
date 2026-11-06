@@ -1,0 +1,962 @@
+/* style.css */
+:root {
+    --bg-color: #ffffff;
+    --text-color: #333333;
+    --primary-color: #1e5631;
+    --navbar-bg: #f8f9fa;
+    --border-color: #dddddd;
+    --card-bg: #ffffff;
+}
+
+.dark-mode, html.dark {
+    --bg-color: #121212;
+    --text-color: #e0e0e0;
+    --primary-color: #1e5631;
+    --navbar-bg: #1f1f1f;
+    --border-color: #333333;
+    --card-bg: #1e1e1e;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: Arial, sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    margin: 0;
+    padding: 0;
+}
+
+/* Əlavə nümunə siniflər */
+.navbar {
+    background-color: var(--navbar-bg);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem;
+}
+
+.card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+
+
+/* --- Custom Premium Theme Overrides --- */
+
+/* 1. Text Selection */
+::selection {
+    background-color: var(--primary-color, #1e5631) !important;
+    color: #ffffff !important;
+}
+::-moz-selection {
+    background-color: var(--primary-color, #1e5631) !important;
+    color: #ffffff !important;
+}
+
+/* ========================================================
+   2. FOCUS EFFECTLƏRİNİN DÜZƏLDİLMƏSİ (DİZAYN UNİFİKASİYASI)
+   - Bütün brauzer default mavi outline və box-shadow ləğv edilir
+   - Brend zümrüd yaşılı (#1e5631 / #2ecc71) kənar və zərif kölgə
+   - Həm tünd (Dark), həm də ağ (Light) rejimdə mükəmməl uyğunluq
+   ======================================================== */
+
+/* Mavi Outlinelərin və Default Shadowların Qlobal Silinməsi */
+input,
+select,
+textarea,
+button {
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+input:focus,
+input:focus-visible,
+select:focus,
+select:focus-visible,
+textarea:focus,
+textarea:focus-visible,
+button:focus,
+button:focus-visible {
+    outline: none !important;
+}
+
+/* Bütün axtarış, rəqəm və filter sahələri üçün yaşıl fokus effekti */
+input[type="text"]:focus,
+input[type="text"]:focus-visible,
+input[type="number"]:focus,
+input[type="number"]:focus-visible,
+input[type="search"]:focus,
+input[type="search"]:focus-visible,
+input[type="password"]:focus,
+input[type="password"]:focus-visible,
+input[type="email"]:focus,
+input[type="email"]:focus-visible,
+input:focus,
+input:focus-visible,
+select:focus,
+select:focus-visible,
+textarea:focus,
+textarea:focus-visible,
+#searchInput:focus,
+#searchInput:focus-visible,
+#smartFilterForm input:focus,
+#smartFilterForm input:focus-visible,
+#smartFilterForm select:focus,
+#smartFilterForm select:focus-visible {
+    outline: none !important;
+    border-color: #1e5631 !important;
+    box-shadow: 0 0 5px rgba(46, 204, 113, 0.3) !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+/* Qaranlıq Tema (Dark Mode) üçün Fokus Effekti */
+html.dark input[type="text"]:focus,
+html.dark input[type="text"]:focus-visible,
+html.dark input[type="number"]:focus,
+html.dark input[type="number"]:focus-visible,
+html.dark input[type="search"]:focus,
+html.dark input[type="search"]:focus-visible,
+html.dark input[type="password"]:focus,
+html.dark input[type="password"]:focus-visible,
+html.dark input[type="email"]:focus,
+html.dark input[type="email"]:focus-visible,
+html.dark input:focus,
+html.dark input:focus-visible,
+html.dark select:focus,
+html.dark select:focus-visible,
+html.dark textarea:focus,
+html.dark textarea:focus-visible,
+html.dark #searchInput:focus,
+html.dark #searchInput:focus-visible,
+html.dark #smartFilterForm input:focus,
+html.dark #smartFilterForm input:focus-visible,
+html.dark #smartFilterForm select:focus,
+html.dark #smartFilterForm select:focus-visible,
+.dark-mode input[type="text"]:focus,
+.dark-mode input[type="text"]:focus-visible,
+.dark-mode input[type="number"]:focus,
+.dark-mode input[type="number"]:focus-visible,
+.dark-mode input[type="search"]:focus,
+.dark-mode input[type="search"]:focus-visible,
+.dark-mode input[type="password"]:focus,
+.dark-mode input[type="password"]:focus-visible,
+.dark-mode input[type="email"]:focus,
+.dark-mode input[type="email"]:focus-visible,
+.dark-mode input:focus,
+.dark-mode input:focus-visible,
+.dark-mode select:focus,
+.dark-mode select:focus-visible,
+.dark-mode textarea:focus,
+.dark-mode textarea:focus-visible,
+.dark-mode #searchInput:focus,
+.dark-mode #searchInput:focus-visible,
+.dark-mode #smartFilterForm input:focus,
+.dark-mode #smartFilterForm input:focus-visible,
+.dark-mode #smartFilterForm select:focus,
+.dark-mode #smartFilterForm select:focus-visible {
+    outline: none !important;
+    border-color: #2ecc71 !important;
+    box-shadow: 0 0 5px rgba(46, 204, 113, 0.35) !important;
+}
+
+/* Ağ Tema (Light Mode) üçün Fokus Effekti */
+html:not(.dark) input[type="text"]:focus,
+html:not(.dark) input[type="text"]:focus-visible,
+html:not(.dark) input[type="number"]:focus,
+html:not(.dark) input[type="number"]:focus-visible,
+html:not(.dark) input[type="search"]:focus,
+html:not(.dark) input[type="search"]:focus-visible,
+html:not(.dark) input[type="password"]:focus,
+html:not(.dark) input[type="password"]:focus-visible,
+html:not(.dark) input[type="email"]:focus,
+html:not(.dark) input[type="email"]:focus-visible,
+html:not(.dark) input:focus,
+html:not(.dark) input:focus-visible,
+html:not(.dark) select:focus,
+html:not(.dark) select:focus-visible,
+html:not(.dark) textarea:focus,
+html:not(.dark) textarea:focus-visible,
+html:not(.dark) #searchInput:focus,
+html:not(.dark) #searchInput:focus-visible,
+html:not(.dark) #smartFilterForm input:focus,
+html:not(.dark) #smartFilterForm input:focus-visible,
+html:not(.dark) #smartFilterForm select:focus,
+html:not(.dark) #smartFilterForm select:focus-visible,
+.light-mode input[type="text"]:focus,
+.light-mode input[type="text"]:focus-visible,
+.light-mode input[type="number"]:focus,
+.light-mode input[type="number"]:focus-visible,
+.light-mode input[type="search"]:focus,
+.light-mode input[type="search"]:focus-visible,
+.light-mode input[type="password"]:focus,
+.light-mode input[type="password"]:focus-visible,
+.light-mode input[type="email"]:focus,
+.light-mode input[type="email"]:focus-visible,
+.light-mode input:focus,
+.light-mode input:focus-visible,
+.light-mode select:focus,
+.light-mode select:focus-visible,
+.light-mode textarea:focus,
+.light-mode textarea:focus-visible,
+.light-mode #searchInput:focus,
+.light-mode #searchInput:focus-visible,
+.light-mode #smartFilterForm input:focus,
+.light-mode #smartFilterForm input:focus-visible,
+.light-mode #smartFilterForm select:focus,
+.light-mode #smartFilterForm select:focus-visible,
+body:not(.dark-mode) input[type="text"]:focus,
+body:not(.dark-mode) input[type="text"]:focus-visible,
+body:not(.dark-mode) input[type="number"]:focus,
+body:not(.dark-mode) input[type="number"]:focus-visible,
+body:not(.dark-mode) input[type="search"]:focus,
+body:not(.dark-mode) input[type="search"]:focus-visible,
+body:not(.dark-mode) input:focus,
+body:not(.dark-mode) input:focus-visible,
+body:not(.dark-mode) select:focus,
+body:not(.dark-mode) select:focus-visible,
+body:not(.dark-mode) textarea:focus,
+body:not(.dark-mode) textarea:focus-visible,
+body:not(.dark-mode) #searchInput:focus,
+body:not(.dark-mode) #searchInput:focus-visible,
+body:not(.dark-mode) #smartFilterForm input:focus,
+body:not(.dark-mode) #smartFilterForm input:focus-visible,
+body:not(.dark-mode) #smartFilterForm select:focus,
+body:not(.dark-mode) #smartFilterForm select:focus-visible {
+    outline: none !important;
+    border-color: #1e5631 !important;
+    box-shadow: 0 0 5px rgba(46, 204, 113, 0.3) !important;
+}
+
+/* 3. Option elements hover and checked states */
+option {
+    background-color: #1e1e1e; /* Dark carbon background for options */
+    color: #e0e0e0;
+}
+option:checked, option:hover, option:focus {
+    background-color: var(--primary-color, #1e5631) !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 10px 100px var(--primary-color, #1e5631) inset !important;
+}
+
+/* Custom Select Scrollbar */
+.custom-select-options::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-select-options::-webkit-scrollbar-track {
+    background: #1e1e1e;
+}
+.custom-select-options::-webkit-scrollbar-thumb {
+    background: #333333;
+    border-radius: 4px;
+}
+.custom-select-options::-webkit-scrollbar-thumb:hover {
+    background: #1e5631;
+}
+
+/* Custom Select Styling */
+.custom-select-wrapper { 
+    position: relative !important; 
+}
+
+.custom-select-trigger {
+    user-select: none !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+.custom-options {
+    width: max-content !important;
+    max-width: 280px !important;
+    overflow-x: hidden !important;
+    border-radius: 0.75rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.custom-option {
+    padding: 10px 16px !important;
+    white-space: nowrap !important;
+    cursor: pointer !important;
+    transition: background-color 0.15s ease, color 0.15s ease !important;
+}
+
+/* Light Mode Custom Select (Ağ tema üçün: arxaplan ağ, mətn tünd, kənar incə boz) */
+.light-mode .custom-select-trigger,
+html:not(.dark) .custom-select-trigger,
+body:not(.dark-mode) .custom-select-trigger,
+#role-matrix-wrapper .custom-select-trigger {
+    background-color: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    color: #333333 !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+.light-mode .custom-select-trigger .selected-text,
+html:not(.dark) .custom-select-trigger .selected-text,
+body:not(.dark-mode) .custom-select-trigger .selected-text {
+    color: #333333 !important;
+}
+
+.light-mode .custom-select-trigger .selected-text span,
+html:not(.dark) .custom-select-trigger .selected-text span,
+body:not(.dark-mode) .custom-select-trigger .selected-text span {
+    color: #6b7280 !important;
+}
+
+.light-mode .custom-select-trigger svg,
+html:not(.dark) .custom-select-trigger svg,
+body:not(.dark-mode) .custom-select-trigger svg {
+    color: #6b7280 !important;
+}
+
+.light-mode .custom-options,
+html:not(.dark) .custom-options,
+body:not(.dark-mode) .custom-options,
+#role-matrix-options {
+    background-color: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
+}
+
+.light-mode .custom-option,
+html:not(.dark) .custom-option,
+body:not(.dark-mode) .custom-option,
+#role-matrix-options .custom-option {
+    background-color: #ffffff !important;
+    color: #333333 !important;
+    border-bottom: 1px solid #f3f4f6 !important;
+}
+
+.light-mode .custom-option:hover,
+html:not(.dark) .custom-option:hover,
+body:not(.dark-mode) .custom-option:hover,
+#role-matrix-options .custom-option:hover {
+    background-color: #f8fafc !important;
+    color: #1e5631 !important;
+}
+
+.light-mode .custom-option.selected-option,
+html:not(.dark) .custom-option.selected-option,
+body:not(.dark-mode) .custom-option.selected-option,
+#role-matrix-options .custom-option.selected-option {
+    background-color: rgba(30, 86, 49, 0.08) !important;
+    color: #1e5631 !important;
+    font-weight: 700 !important;
+}
+
+/* Dark Mode Custom Select (Qaranlıq tema üçün) */
+html.dark .custom-select-trigger,
+.dark-mode .custom-select-trigger,
+html.dark #role-matrix-wrapper .custom-select-trigger {
+    background-color: #121212 !important;
+    border: 1px solid #333333 !important;
+    color: #e0e0e0 !important;
+    box-shadow: none !important;
+}
+
+html.dark .custom-select-trigger .selected-text,
+.dark-mode .custom-select-trigger .selected-text {
+    color: #e0e0e0 !important;
+}
+
+html.dark .custom-select-trigger .selected-text span,
+.dark-mode .custom-select-trigger .selected-text span {
+    color: #9ca3af !important;
+}
+
+html.dark .custom-select-trigger svg,
+.dark-mode .custom-select-trigger svg {
+    color: #9ca3af !important;
+}
+
+html.dark .custom-options,
+.dark-mode .custom-options,
+html.dark #role-matrix-options {
+    background-color: #1e1e1e !important;
+    border: 1px solid #333333 !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+}
+
+html.dark .custom-option,
+.dark-mode .custom-option,
+html.dark #role-matrix-options .custom-option {
+    background-color: #1e1e1e !important;
+    color: #e0e0e0 !important;
+    border-bottom: 1px solid #2a2a2a !important;
+}
+
+html.dark .custom-option:hover,
+.dark-mode .custom-option:hover,
+html.dark #role-matrix-options .custom-option:hover {
+    background-color: rgba(30, 86, 49, 0.25) !important;
+    color: #2ecc71 !important;
+}
+
+html.dark .custom-option.selected-option,
+.dark-mode .custom-option.selected-option,
+html.dark #role-matrix-options .custom-option.selected-option {
+    background-color: rgba(30, 86, 49, 0.2) !important;
+    color: #2ecc71 !important;
+    font-weight: 700 !important;
+}
+
+.custom-select-trigger.ring-2 {
+    box-shadow: 0 0 0 2px #1e5631 !important;
+    border-color: #1e5631 !important;
+}
+
+/* Progress Bar Animations for B2B Analytics */
+@keyframes progressFill {
+    from { width: 0; }
+}
+.progress-fill {
+    animation: progressFill 1s ease-out forwards;
+}
+
+/* ========================================================
+   Role Preview Modal & Global Theme Support (Dark & Light)
+   ======================================================== */
+
+/* Sabit İcazə Mətn Rəngləri (Hər iki temada dəyişməz) */
+.perm-text-view, .perm-badge-view {
+    color: #2ecc71 !important;
+    background-color: rgba(46, 204, 113, 0.12) !important;
+    border: 1px solid rgba(46, 204, 113, 0.25) !important;
+}
+.perm-text-edit, .perm-badge-edit {
+    color: #3498db !important;
+    background-color: rgba(52, 152, 219, 0.12) !important;
+    border: 1px solid rgba(52, 152, 219, 0.25) !important;
+}
+.perm-text-approve, .perm-badge-approve {
+    color: #f39c12 !important;
+    background-color: rgba(243, 156, 18, 0.12) !important;
+    border: 1px solid rgba(243, 156, 18, 0.25) !important;
+}
+.perm-text-export, .perm-badge-export {
+    color: #9b59b6 !important;
+    background-color: rgba(155, 89, 182, 0.12) !important;
+    border: 1px solid rgba(155, 89, 182, 0.25) !important;
+}
+
+/* 1. Default (Tünd Karbon / Dark Theme) */
+.role-preview-modal {
+    background-color: #1e1e1e !important;
+    border: 1px solid #333333 !important;
+    color: #ffffff !important;
+}
+.role-preview-modal-header {
+    background-color: #1e1e1e !important;
+    border-color: #333333 !important;
+}
+#role-preview-modal-title {
+    color: #ffffff !important;
+}
+.role-preview-info-text {
+    color: #a0a0a0 !important;
+}
+.role-preview-close-btn {
+    color: #a0a0a0 !important;
+}
+.role-preview-close-btn:hover {
+    color: #ffffff !important;
+    background-color: #2a2a2a !important;
+}
+.role-preview-modal-body {
+    background-color: #1e1e1e !important;
+}
+.role-preview-module-card {
+    background-color: #2a2a2a !important;
+    border: 1px solid #333333 !important;
+    color: #ffffff !important;
+}
+.role-preview-module-card .module-title {
+    color: #ffffff !important;
+}
+.role-preview-modal-footer {
+    background-color: #1e1e1e !important;
+    border-color: #333333 !important;
+}
+.btn-close-role-preview {
+    background-color: #2a2a2a !important;
+    border: 1px solid #333333 !important;
+    color: #ffffff !important;
+}
+.btn-close-role-preview:hover {
+    background-color: #333333 !important;
+}
+.btn-role-preview {
+    background-color: #2a2a2a !important;
+    border: 1px solid #333333 !important;
+    color: #e0e0e0 !important;
+}
+.btn-role-preview:hover {
+    background-color: #333333 !important;
+    color: #ffffff !important;
+}
+
+/* 2. Ağ Tema (.light-mode və html:not(.dark)) */
+.light-mode .role-preview-modal,
+html:not(.dark) .role-preview-modal {
+    background-color: #ffffff !important;
+    border: 1px solid #e0e0e0 !important;
+    color: #333333 !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+}
+.light-mode .role-preview-modal-header,
+html:not(.dark) .role-preview-modal-header {
+    background-color: #ffffff !important;
+    border-color: #e0e0e0 !important;
+}
+.light-mode #role-preview-modal-title,
+html:not(.dark) #role-preview-modal-title {
+    color: #333333 !important;
+}
+.light-mode .role-preview-info-text,
+html:not(.dark) .role-preview-info-text {
+    color: #666666 !important;
+}
+.light-mode .role-preview-close-btn,
+html:not(.dark) .role-preview-close-btn {
+    color: #666666 !important;
+}
+.light-mode .role-preview-close-btn:hover,
+html:not(.dark) .role-preview-close-btn:hover {
+    color: #111111 !important;
+    background-color: #f0f0f0 !important;
+}
+.light-mode .role-preview-modal-body,
+html:not(.dark) .role-preview-modal-body {
+    background-color: #ffffff !important;
+}
+.light-mode .role-preview-module-card,
+html:not(.dark) .role-preview-module-card {
+    background-color: #f8f9fa !important;
+    border: 1px solid #e0e0e0 !important;
+    color: #333333 !important;
+}
+.light-mode .role-preview-module-card .module-title,
+html:not(.dark) .role-preview-module-card .module-title {
+    color: #333333 !important;
+}
+.light-mode .role-preview-modal-footer,
+html:not(.dark) .role-preview-modal-footer {
+    background-color: #ffffff !important;
+    border-color: #e0e0e0 !important;
+}
+.light-mode .btn-close-role-preview,
+html:not(.dark) .btn-close-role-preview {
+    background-color: #f8f9fa !important;
+    border: 1px solid #e0e0e0 !important;
+    color: #333333 !important;
+}
+.light-mode .btn-close-role-preview:hover,
+html:not(.dark) .btn-close-role-preview:hover {
+    background-color: #e9ecef !important;
+    color: #111111 !important;
+}
+.light-mode .btn-role-preview,
+html:not(.dark) .btn-role-preview {
+    background-color: #f8f9fa !important;
+    border: 1px solid #e0e0e0 !important;
+    color: #333333 !important;
+}
+.light-mode .btn-role-preview:hover,
+html:not(.dark) .btn-role-preview:hover {
+    background-color: #e9ecef !important;
+    color: #111111 !important;
+}
+
+/* ========================================================
+   Ətraflı İcazələr Matriksi - Lokal Deny ('X') İkonları
+   ======================================================== */
+
+/* 1. Default (Tünd Karbon / Dark Theme) */
+.permissions-matrix .deny-icon,
+.permissions-table td .deny-icon,
+.permissions-table td.permission-cell .deny-icon {
+    color: #ff4d4d !important;
+    background-color: rgba(255, 77, 77, 0.1) !important;
+}
+
+/* 2. Ağ Tema (.light-mode və html:not(.dark)) */
+.light-mode .permissions-matrix .deny-icon,
+html:not(.dark) .permissions-matrix .deny-icon,
+.light-mode .permissions-table td .deny-icon,
+html:not(.dark) .permissions-table td .deny-icon,
+.light-mode .permissions-table td.permission-cell .deny-icon,
+html:not(.dark) .permissions-table td.permission-cell .deny-icon {
+    color: #d9534f !important;
+    background-color: rgba(217, 83, 79, 0.1) !important;
+}
+
+/* ========================================================
+   Sifarişlərim Cədvəli - Qlobal Tema Uyğunluğu (Dark & Light)
+   ======================================================== */
+
+/* 1. Default (Tünd Karbon / Dark Theme) */
+.orders-table-card {
+    background-color: #1e1e1e !important;
+    border: 1px solid #333333 !important;
+}
+.orders-table-card table thead {
+    background-color: #1e1e1e !important;
+    border-bottom: 1px solid #333333 !important;
+    color: #ffffff !important;
+}
+.orders-table-card table th {
+    border-color: #333333 !important;
+    color: #ffffff !important;
+}
+.orders-table-card table td {
+    border-color: #333333 !important;
+}
+.orders-table-card table tbody tr {
+    border-bottom: 1px solid #333333 !important;
+}
+.orders-table-card table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* 2. Ağ Tema (.light-mode və html:not(.dark)) */
+.light-mode .orders-table-card,
+html:not(.dark) .orders-table-card {
+    background-color: #ffffff !important;
+    border: 1px solid #e0e0e0 !important;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+}
+.light-mode .orders-table-card table thead,
+html:not(.dark) .orders-table-card table thead {
+    background-color: #f8f9fa !important;
+    border-bottom: 1px solid #e0e0e0 !important;
+    color: #333333 !important;
+}
+.light-mode .orders-table-card table th,
+html:not(.dark) .orders-table-card table th {
+    border-color: #e0e0e0 !important;
+    color: #333333 !important;
+}
+.light-mode .orders-table-card table td,
+html:not(.dark) .orders-table-card table td {
+    border-color: #e0e0e0 !important;
+    color: #333333 !important;
+}
+.light-mode .orders-table-card table tbody tr,
+html:not(.dark) .orders-table-card table tbody tr {
+    border-bottom: 1px solid #e0e0e0 !important;
+}
+.light-mode .orders-table-card table tbody tr:hover,
+html:not(.dark) .orders-table-card table tbody tr:hover {
+    background-color: #f8fafc !important;
+}
+
+/* ========================================================
+   'Məhsul kodu ilə səbətə əlavə et' Qutusu
+   ======================================================== */
+
+.add-by-code-card {
+    background-color: #f8f9fa !important;
+    background-image: none !important;
+    border: 1px solid #e0e0e0 !important;
+}
+
+.dark .add-by-code-card,
+html.dark .add-by-code-card {
+    background-color: #2a2a2a !important;
+    background-image: none !important;
+    border: 1px solid #333333 !important;
+}
+
+.light-mode .add-by-code-card,
+html:not(.dark) .add-by-code-card {
+    background-color: #f8f9fa !important;
+    background-image: none !important;
+    border: 1px solid #e0e0e0 !important;
+}
+
+/* ========================================================
+   Header 'Sifarişlərim' Nav Link Parlaqlığı
+   ======================================================== */
+.nav-orders-link,
+.nav-orders-link svg,
+.nav-orders-link span {
+    color: #111827 !important;
+    stroke: #111827 !important;
+    opacity: 1 !important;
+}
+
+.nav-orders-link:hover,
+.nav-orders-link:hover svg,
+.nav-orders-link:hover span {
+    color: #1e5631 !important;
+    stroke: #1e5631 !important;
+}
+
+.dark .nav-orders-link,
+html.dark .nav-orders-link,
+.dark .nav-orders-link svg,
+html.dark .nav-orders-link svg,
+.dark .nav-orders-link span,
+html.dark .nav-orders-link span {
+    color: #ffffff !important;
+    stroke: #ffffff !important;
+    opacity: 1 !important;
+}
+
+.dark .nav-orders-link:hover,
+html.dark .nav-orders-link:hover,
+.dark .nav-orders-link:hover svg,
+html.dark .nav-orders-link:hover svg,
+.dark .nav-orders-link:hover span,
+html.dark .nav-orders-link:hover span {
+    color: #ffffff !important;
+    stroke: #ffffff !important;
+}
+
+.light-mode .nav-orders-link,
+html:not(.dark) .nav-orders-link,
+.light-mode .nav-orders-link svg,
+html:not(.dark) .nav-orders-link svg,
+.light-mode .nav-orders-link span,
+html:not(.dark) .nav-orders-link span {
+    color: #111827 !important;
+    stroke: #111827 !important;
+    opacity: 1 !important;
+}
+
+/* Səbət Minus / Plus Düymələri */
+.btn-minus,
+.btn-plus {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    user-select: none;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+.btn-minus:disabled,
+.btn-minus[disabled],
+.btn-minus.cursor-not-allowed {
+    opacity: 0.4 !important;
+    cursor: not-allowed !important;
+}
+
+.btn-minus:not(:disabled):hover,
+.btn-plus:not(:disabled):hover {
+    cursor: pointer !important;
+}
+
+.btn-minus i,
+.btn-plus i {
+    pointer-events: none;
+    font-size: 0.75rem;
+}
+
+.btn-minus i.fa-minus:empty::before {
+    content: "-";
+    font-family: inherit;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.btn-plus i.fa-plus:empty::before {
+    content: "+";
+    font-family: inherit;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+/* ========================================================
+   GLOBAL FOOTER (DARK CARBON & LIGHT MODE)
+   Standart: Tünd Karbon (#141414)
+   Açıq Tema: Yalnız body-də .light-mode aktiv olduqda
+   ======================================================== */
+footer,
+.app-footer {
+    background-color: #141414 !important;
+    border-top: 1px solid #262626 !important;
+    color: #cccccc !important;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    width: 100%;
+    margin-top: auto;
+}
+
+footer .footer-title,
+.app-footer .footer-title {
+    color: #ffffff !important;
+}
+
+footer .footer-text,
+.app-footer .footer-text {
+    color: #cccccc !important;
+}
+
+footer .footer-link,
+.app-footer .footer-link {
+    color: #cccccc !important;
+    transition: color 0.2s ease, transform 0.2s ease;
+    display: inline-block;
+    cursor: pointer !important;
+    text-decoration: none !important;
+}
+
+footer .footer-link:hover,
+.app-footer .footer-link:hover {
+    color: #2ecc71 !important;
+    transform: translateX(3px);
+    cursor: pointer !important;
+}
+
+footer .footer-contact-item,
+.app-footer .footer-contact-item {
+    color: #cccccc !important;
+}
+
+footer .footer-divider,
+.app-footer .footer-divider {
+    border-color: #262626 !important;
+}
+
+footer .footer-bottom-text,
+.app-footer .footer-bottom-text {
+    color: #999999 !important;
+}
+
+/* YALNIZ body-də .light-mode klassı aktiv olduqda */
+body.light-mode footer,
+body.light-mode .app-footer,
+.light-mode footer,
+.light-mode .app-footer {
+    background-color: #f1f3f5 !important;
+    border-top: 1px solid #dee2e6 !important;
+    color: #495057 !important;
+}
+
+body.light-mode footer .footer-title,
+body.light-mode .app-footer .footer-title,
+.light-mode footer .footer-title,
+.light-mode .app-footer .footer-title {
+    color: #111827 !important;
+}
+
+body.light-mode footer .footer-text,
+body.light-mode .app-footer .footer-text,
+.light-mode footer .footer-text,
+.light-mode .app-footer .footer-text {
+    color: #495057 !important;
+}
+
+body.light-mode footer .footer-link,
+body.light-mode .app-footer .footer-link,
+.light-mode footer .footer-link,
+.light-mode .app-footer .footer-link {
+    color: #495057 !important;
+}
+
+body.light-mode footer .footer-link:hover,
+body.light-mode .app-footer .footer-link:hover,
+.light-mode footer .footer-link:hover,
+.light-mode .app-footer .footer-link:hover {
+    color: #1e5631 !important;
+    transform: translateX(3px);
+}
+
+body.light-mode footer .footer-contact-item,
+body.light-mode .app-footer .footer-contact-item,
+.light-mode footer .footer-contact-item,
+.light-mode .app-footer .footer-contact-item {
+    color: #495057 !important;
+}
+
+body.light-mode footer .footer-divider,
+body.light-mode .app-footer .footer-divider,
+.light-mode footer .footer-divider,
+.light-mode .app-footer .footer-divider {
+    border-color: #dee2e6 !important;
+}
+
+body.light-mode footer .footer-bottom-text,
+body.light-mode .app-footer .footer-bottom-text,
+.light-mode footer .footer-bottom-text,
+.light-mode .app-footer .footer-bottom-text {
+    color: #6c757d !important;
+}
+
+/* ========================================================
+   LOGIN SƏHİFƏSİ (ZÜMRÜD VƏ TÜND TEMA UNİFİKASİYASI)
+   ======================================================== */
+
+#loginForm input {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease !important;
+}
+
+/* Ağ Tema (Light Mode) Giriş Formu */
+html:not(.dark) #loginForm input:focus,
+html:not(.dark) #loginForm input:focus-visible,
+body.light-mode #loginForm input:focus,
+body.light-mode #loginForm input:focus-visible {
+    outline: none !important;
+    border-color: #1e5631 !important;
+    box-shadow: 0 0 0 3px rgba(30, 86, 49, 0.15) !important;
+    background-color: #ffffff !important;
+}
+
+/* Qaranlıq Tema (Dark Mode) Giriş Formu */
+html.dark #loginForm input:focus,
+html.dark #loginForm input:focus-visible,
+.dark-mode #loginForm input:focus,
+.dark-mode #loginForm input:focus-visible {
+    outline: none !important;
+    border-color: #2ecc71 !important;
+    box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.25) !important;
+    background-color: #121212 !important;
+}
+
+/* Giriş Düyməsi (Zümrüd / Emerald Yaşılı) */
+#loginForm button[type="submit"] {
+    background-color: #1e5631 !important;
+    color: #ffffff !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: 0 2px 8px rgba(30, 86, 49, 0.25) !important;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease !important;
+}
+
+#loginForm button[type="submit"]:hover {
+    background-color: #164326 !important;
+    box-shadow: 0 4px 12px rgba(30, 86, 49, 0.35) !important;
+}
+
+#loginForm button[type="submit"]:focus,
+#loginForm button[type="submit"]:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.35) !important;
+}
+
+/* ========================================================
+   RƏQƏM İNPUTLARI ÜÇÜN NATİVE ARTIRMA/AZALTMA OXLARININ GİZLƏDİLMƏSİ
+   1. Kataloqdakı məhsul kartlarının miqdar seçicisi (.qty-input)
+   2. Məhsul detalındakı miqdar seçicisi (.qty-input)
+   3. Anbar Müdirinin sifariş detalındakı stok idarəetməsi xanası (.no-spinner)
+   ======================================================== */
+input.qty-input::-webkit-outer-spin-button,
+input.qty-input::-webkit-inner-spin-button,
+input.no-spinner::-webkit-outer-spin-button,
+input.no-spinner::-webkit-inner-spin-button,
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button,
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+
+input.qty-input,
+input.no-spinner,
+.qty-input,
+.no-spinner {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
