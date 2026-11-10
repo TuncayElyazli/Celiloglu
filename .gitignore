@@ -1,4 +1,4 @@
-HELP.md
+    HELP.md
 target/
 **/target/
 .mvn/wrapper/maven-wrapper.jar
@@ -56,4 +56,10 @@ target/
 # Konkret hesaba aid lokal SQL
 init-admin-tuncay.sql
 reset-password-tuncay.sql
+
+# Deploy və əməliyyat sistemi
+.vercel/
+.DS_Store
+Thumbs.db
+Desktop.ini
 

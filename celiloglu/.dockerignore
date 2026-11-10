@@ -1,0 +1,42 @@
+# Git və repo idarəetməsi
+.git/
+.gitignore
+.gitattributes
+
+# Build çıxışları
+target/
+**/target/
+
+# Məxfi və lokal konfiqurasiya faylları
+local-private/
+**/local-private/
+.env
+.env.*
+application-local.properties
+application-local.yml
+application-local.yaml
+
+# IDE və redaktor faylları
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.settings/
+.classpath
+.project
+.sts4-cache/
+.apt_generated/
+
+# Runtime yükləmələri və verilənlər bazası faylları
+uploads/
+**/uploads/
+*.log
+*.dump
+*.backup
+*.sql
+
+# Köməkçi skriptlər və sənədlər
+scripts/
+HELP.md
+
