@@ -1138,10 +1138,10 @@
                             ili</label>
                         <input type="text" id="product-year" th:field="*{yearRange}"
                             class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333333] dark:bg-[#1e1e1e] dark:text-[#e0e0e0] focus:outline-none focus:ring-2 focus:ring-[#1e5631]/50 focus:border-[#1e5631] transition-colors placeholder-gray-400"
-                            maxlength="4" pattern="\d{4}" placeholder="Məsələn: 2024"
-                            title="4 rəqəmdən ibarət il daxil edin (məsələn: 2024)">
-                        <p th:if="${#fields.hasErrors('yearRange')}"
-                            class="mt-1 text-xs text-red-600 dark:text-red-400">İstehsal ili 4 rəqəmdən ibarət olmalıdır.</p>
+                            maxlength="15" pattern="\d{4}(\s*[-–—]\s*\d{4})?" placeholder="Məsələn: 2024"
+                            title="4 rəqəmdən ibarət il və ya il aralığı (məsələn: 2024 və ya 2015-2020)">
+                        <p th:if="${#fields.hasErrors('yearRange')}" th:errors="*{yearRange}"
+                            class="mt-1 text-xs text-red-600 dark:text-red-400">İl cari ildən böyük ola bilməz.</p>
                     </div>
                     <div>
                         <label for="product-engine"

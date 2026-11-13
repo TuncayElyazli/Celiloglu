@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.Year;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -322,36 +323,99 @@ class ProductServiceValidationTest {
     }
 
     @Test
-    @DisplayName("yearRange tək 4 rəqəm olmalıdır və ya boş ola bilər")
-    void testYearRange_Validation() {
+    @DisplayName("yearRange (yaratma): cari il qəbul edilir, 2030 və cari ildən böyük illər rədd edilir")
+    void testCreateProduct_YearRange_Validation() {
+        int currentYear = Year.now().getValue();
         ProductRequestDto dto = createValidDto();
 
-        // Boş qala bilər
-        dto.setYearRange(null);
         when(categoryRepository.findById(1L)).thenReturn(Optional.of(testCategory));
         when(carBrandRepository.findById(2L)).thenReturn(Optional.of(testCarBrand));
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Boş və ya null qala bilər (istəyə bağlıdır)
+        dto.setYearRange(null);
         assertDoesNotThrow(() -> productService.createProduct(dto));
 
-        // Boşluq qala bilər
         dto.setYearRange("   ");
         assertDoesNotThrow(() -> productService.createProduct(dto));
 
-        // 3 rəqəm rədd edilir
+        // Cari il qəbul edilir
+        dto.setYearRange(String.valueOf(currentYear));
+        assertDoesNotThrow(() -> productService.createProduct(dto));
+
+        // 2030 rədd edilir
+        dto.setYearRange("2030");
+        IllegalArgumentException ex2030 = assertThrows(IllegalArgumentException.class,
+                () -> productService.createProduct(dto));
+        assertEquals("İl cari ildən böyük ola bilməz.", ex2030.getMessage());
+
+        // Cari ildən böyük istənilən il rədd edilir
+        dto.setYearRange(String.valueOf(currentYear + 1));
+        IllegalArgumentException exNext = assertThrows(IllegalArgumentException.class,
+                () -> productService.createProduct(dto));
+        assertEquals("İl cari ildən böyük ola bilməz.", exNext.getMessage());
+
+        // Range: 2015-2020 qəbul edilir
+        dto.setYearRange("2015-2020");
+        assertDoesNotThrow(() -> productService.createProduct(dto));
+
+        // Range: son il cari ildən böyük olduqda (2020-2030) rədd edilir
+        dto.setYearRange("2020-2030");
+        IllegalArgumentException exRangeFuture = assertThrows(IllegalArgumentException.class,
+                () -> productService.createProduct(dto));
+        assertEquals("İl cari ildən böyük ola bilməz.", exRangeFuture.getMessage());
+
+        // Range: başlanğıc ili son ildən böyük olduqda rədd edilir
+        dto.setYearRange("2025-2020");
+        IllegalArgumentException exInverted = assertThrows(IllegalArgumentException.class,
+                () -> productService.createProduct(dto));
+        assertEquals("Başlanğıc ili son ildən böyük ola bilməz!", exInverted.getMessage());
+
+        // Yanlış formatlar rədd edilir
         dto.setYearRange("202");
         assertThrows(IllegalArgumentException.class, () -> productService.createProduct(dto));
 
-        // Range formatı rədd edilir (admin tək il daxil edir)
-        dto.setYearRange("2015-2020");
-        assertThrows(IllegalArgumentException.class, () -> productService.createProduct(dto));
-
-        // Hərflər rədd edilir
         dto.setYearRange("abcd");
         assertThrows(IllegalArgumentException.class, () -> productService.createProduct(dto));
+    }
 
-        // Düzgün 4 rəqəm boşluqla trim olunaraq qəbul edilir
-        dto.setYearRange("  2024  ");
-        assertDoesNotThrow(() -> productService.createProduct(dto));
+    @Test
+    @DisplayName("yearRange (redaktə): cari il qəbul edilir, 2030 rədd edilir")
+    void testUpdateProduct_YearRange_Validation() {
+        int currentYear = Year.now().getValue();
+        Product existing = new Product();
+        existing.setId(100L);
+        existing.setCode("YAG-101");
+
+        when(productRepository.findById(100L)).thenReturn(Optional.of(existing));
+        when(productRepository.findByCode("YAG-101")).thenReturn(Optional.of(existing));
+        when(categoryRepository.findById(1L)).thenReturn(Optional.of(testCategory));
+        when(carBrandRepository.findById(2L)).thenReturn(Optional.of(testCarBrand));
+        when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Cari il qəbul edilir
+        ProductRequestDto dtoCurrent = createValidDto();
+        dtoCurrent.setYearRange(String.valueOf(currentYear));
+        assertDoesNotThrow(() -> productService.updateProduct(100L, dtoCurrent));
+
+        // 2030 rədd edilir
+        ProductRequestDto dto2030 = createValidDto();
+        dto2030.setYearRange("2030");
+        IllegalArgumentException ex2030 = assertThrows(IllegalArgumentException.class,
+                () -> productService.updateProduct(100L, dto2030));
+        assertEquals("İl cari ildən böyük ola bilməz.", ex2030.getMessage());
+
+        // Range 2015-2020 qəbul edilir
+        ProductRequestDto dtoRange = createValidDto();
+        dtoRange.setYearRange("2015-2020");
+        assertDoesNotThrow(() -> productService.updateProduct(100L, dtoRange));
+
+        // Range 2020-2030 rədd edilir
+        ProductRequestDto dtoRange2030 = createValidDto();
+        dtoRange2030.setYearRange("2020-2030");
+        IllegalArgumentException exRange2030 = assertThrows(IllegalArgumentException.class,
+                () -> productService.updateProduct(100L, dtoRange2030));
+        assertEquals("İl cari ildən böyük ola bilməz.", exRange2030.getMessage());
     }
 
     @Test

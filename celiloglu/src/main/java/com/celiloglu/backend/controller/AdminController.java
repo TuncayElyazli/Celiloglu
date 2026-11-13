@@ -118,7 +118,8 @@ public class AdminController {
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
-                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .contentType(
+                        MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(excelData);
     }
 
@@ -163,6 +164,7 @@ public class AdminController {
                     case "stockQuantity" -> "Stok miqdarı tam ədəd və minimum 0 olmalıdır.";
                     case "categoryId" -> "Düzgün kateqoriya seçilməlidir.";
                     case "carBrandId" -> "Düzgün avtomobil markası seçilməlidir.";
+                    case "yearRange" -> "İl cari ildən böyük ola bilməz.";
                     default -> "Daxil edilmiş məlumat düzgün deyil.";
                 };
                 errors.reject("product.binding." + field, message);
@@ -193,7 +195,11 @@ public class AdminController {
                     id == null ? "Məhsul əlavə edildi." : "Məhsul yeniləndi.");
             return "redirect:/admin?tab=products";
         } catch (IllegalArgumentException | EntityNotFoundException ex) {
-            errors.reject("product.invalid", ex.getMessage());
+            String msg = ex.getMessage();
+            if (msg != null && (msg.contains("İl") || msg.contains("ili") || msg.contains("İstehsal ili"))) {
+                errors.rejectValue("yearRange", "product.yearRange", msg);
+            }
+            errors.reject("product.invalid", msg != null ? msg : "Daxil edilmiş məlumat düzgün deyil.");
         } catch (DataIntegrityViolationException ex) {
             log.warn("Məhsul saxlanılarkən baza məhdudiyyəti pozuldu.", ex);
             errors.reject("product.constraint",

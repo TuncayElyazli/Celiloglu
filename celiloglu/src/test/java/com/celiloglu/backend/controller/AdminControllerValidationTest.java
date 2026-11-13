@@ -19,6 +19,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.time.Year;
 import java.util.Collections;
 import java.util.List;
 
@@ -314,5 +315,86 @@ class AdminControllerValidationTest {
                 .andExpect(flash().attribute("productSuccess", "Məhsul yeniləndi."));
 
         verify(productService, times(1)).updateProduct(eq(42L), any(ProductRequestDto.class));
+    }
+
+    @Test
+    @DisplayName("POST /admin/products: cari il qəbul edilir və uğurla yönləndirilir")
+    void testCreateProduct_Year_AcceptsCurrentYear_Success() throws Exception {
+        int currentYear = Year.now().getValue();
+        ProductResponseDto responseDto = new ProductResponseDto();
+        responseDto.setId(50L);
+        when(productService.createProduct(any(ProductRequestDto.class))).thenReturn(responseDto);
+
+        mockMvc.perform(post("/admin/products")
+                        .param("name", "Test Məhsul")
+                        .param("code", "TST-YR")
+                        .param("price", "15.00")
+                        .param("stockQuantity", "5")
+                        .param("categoryId", "1")
+                        .param("yearRange", String.valueOf(currentYear)))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin?tab=products"))
+                .andExpect(flash().attribute("productSuccess", "Məhsul əlavə edildi."));
+    }
+
+    @Test
+    @DisplayName("POST /admin/products: 2030 ili rədd edilir və forma açıq saxlanılaraq xəta göstərilir")
+    void testCreateProduct_Year_Rejects2030() throws Exception {
+        when(productService.createProduct(any(ProductRequestDto.class)))
+                .thenThrow(new IllegalArgumentException("İl cari ildən böyük ola bilməz."));
+
+        mockMvc.perform(post("/admin/products")
+                        .param("name", "Test Məhsul")
+                        .param("code", "TST-YR")
+                        .param("price", "15.00")
+                        .param("stockQuantity", "5")
+                        .param("categoryId", "1")
+                        .param("yearRange", "2030"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin"))
+                .andExpect(model().attribute("openProductModal", true))
+                .andExpect(model().attributeHasFieldErrors("productForm", "yearRange"))
+                .andExpect(model().attributeHasErrors("productForm"));
+    }
+
+    @Test
+    @DisplayName("POST /admin/products/{id}: redaktədə cari il qəbul edilir")
+    void testUpdateProduct_Year_AcceptsCurrentYear_Success() throws Exception {
+        int currentYear = Year.now().getValue();
+        ProductResponseDto responseDto = new ProductResponseDto();
+        responseDto.setId(42L);
+        when(productService.updateProduct(eq(42L), any(ProductRequestDto.class))).thenReturn(responseDto);
+
+        mockMvc.perform(post("/admin/products/42")
+                        .param("name", "Yenilənmiş Məhsul")
+                        .param("code", "EX-42")
+                        .param("price", "25.00")
+                        .param("stockQuantity", "10")
+                        .param("categoryId", "1")
+                        .param("yearRange", String.valueOf(currentYear)))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin?tab=products"))
+                .andExpect(flash().attribute("productSuccess", "Məhsul yeniləndi."));
+    }
+
+    @Test
+    @DisplayName("POST /admin/products/{id}: redaktədə 2030 ili rədd edilir və xəta göstərilir")
+    void testUpdateProduct_Year_Rejects2030() throws Exception {
+        when(productService.updateProduct(eq(42L), any(ProductRequestDto.class)))
+                .thenThrow(new IllegalArgumentException("İl cari ildən böyük ola bilməz."));
+
+        mockMvc.perform(post("/admin/products/42")
+                        .param("name", "Yenilənmiş Məhsul")
+                        .param("code", "EX-42")
+                        .param("price", "25.00")
+                        .param("stockQuantity", "10")
+                        .param("categoryId", "1")
+                        .param("yearRange", "2030"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin"))
+                .andExpect(model().attribute("editingProductId", 42L))
+                .andExpect(model().attribute("openProductModal", true))
+                .andExpect(model().attributeHasFieldErrors("productForm", "yearRange"))
+                .andExpect(model().attributeHasErrors("productForm"));
     }
 }

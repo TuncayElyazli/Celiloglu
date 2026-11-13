@@ -20,7 +20,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Year;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @Transactional(readOnly = true)
@@ -193,11 +196,33 @@ public class ProductServiceImpl implements ProductService {
         if (requestDto.getYearRange() != null) {
             String trimmedYear = requestDto.getYearRange().trim();
             if (!trimmedYear.isEmpty()) {
-                if (!trimmedYear.matches("^\\d{4}$")) {
+                int currentYear = Year.now().getValue();
+                Pattern singleYearPattern = Pattern.compile("^\\d{4}$");
+                Pattern rangePattern = Pattern.compile("^(\\d{4})\\s*[-–—]\\s*(\\d{4})$");
+
+                Matcher singleMatcher = singleYearPattern.matcher(trimmedYear);
+                Matcher rangeMatcher = rangePattern.matcher(trimmedYear);
+
+                if (singleMatcher.matches()) {
+                    int year = Integer.parseInt(trimmedYear);
+                    if (year > currentYear) {
+                        throw new IllegalArgumentException("İl cari ildən böyük ola bilməz.");
+                    }
+                    yearRange = trimmedYear;
+                } else if (rangeMatcher.matches()) {
+                    int startYear = Integer.parseInt(rangeMatcher.group(1));
+                    int endYear = Integer.parseInt(rangeMatcher.group(2));
+                    if (startYear > endYear) {
+                        throw new IllegalArgumentException("Başlanğıc ili son ildən böyük ola bilməz!");
+                    }
+                    if (endYear > currentYear || startYear > currentYear) {
+                        throw new IllegalArgumentException("İl cari ildən böyük ola bilməz.");
+                    }
+                    yearRange = startYear + "-" + endYear;
+                } else {
                     throw new IllegalArgumentException(
                             "İstehsal ili 4 rəqəmdən ibarət olmalıdır (məsələn: 2024)!");
                 }
-                yearRange = trimmedYear;
             }
         }
 
