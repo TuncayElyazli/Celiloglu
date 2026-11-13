@@ -58,6 +58,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 SecurityConfig.class,
                 PasswordConfig.class,
                 CustomUserDetailsService.class,
+                com.celiloglu.backend.security.RoleBasedAuthenticationSuccessHandler.class,
+                com.celiloglu.backend.controller.SecurityModelAdvice.class,
                 AdminOrderControllerTest.TestConfig.class
 })
 @WebAppConfiguration
@@ -581,6 +583,11 @@ class AdminOrderControllerTest {
                 @Bean
                 public UserRepository userRepository() {
                         return mock(UserRepository.class);
+                }
+
+                @Bean
+                public com.celiloglu.backend.service.CartService cartService() {
+                        return mock(com.celiloglu.backend.service.CartService.class);
                 }
 
                 @Bean

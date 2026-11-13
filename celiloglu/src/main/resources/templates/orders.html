@@ -129,7 +129,7 @@
                 </form>
 
                 <!-- Right icons -->
-                <div class="flex items-center space-x-6 sm:space-x-8">
+                <div class="flex items-center space-x-3.5 sm:space-x-6 lg:space-x-8">
                     <!-- Rejim Toggle -->
                     <button id="theme-toggle" type="button"
                         class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white flex flex-col items-center transition-all duration-300 group dark:hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] focus:outline-none">
@@ -175,6 +175,19 @@
                         </div>
                         <span class="text-[11px] font-medium mt-1">Səbət</span>
                     </a>
+
+                    <!-- Profil Göstəricisi -->
+                    <div th:if="${isAuthenticated}" class="nav-profile-item group"
+                        th:title="${currentUserDisplayName ?: (currentUsername ?: 'İstifadəçi')}">
+                        <div class="nav-profile-circle group-hover:scale-105 group-hover:border-primary dark:group-hover:border-white">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </div>
+                        <span class="nav-profile-name"
+                            th:text="${currentUserDisplayName ?: (currentUsername ?: 'İstifadəçi')}">İstifadəçi</span>
+                    </div>
 
                     <!-- Çıxış -->
                     <form th:action="@{/logout}" method="post" class="inline-flex">

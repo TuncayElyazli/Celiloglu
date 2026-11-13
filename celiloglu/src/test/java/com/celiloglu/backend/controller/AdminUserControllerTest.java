@@ -209,6 +209,7 @@ class AdminUserControllerTest {
         viewResolver.setCharacterEncoding("UTF-8");
 
         MockMvc mvcWithThymeleaf = MockMvcBuilders.standaloneSetup(adminUserController)
+                .setControllerAdvice(new SecurityModelAdvice(mock(com.celiloglu.backend.service.CartService.class)))
                 .setViewResolvers(viewResolver)
                 .build();
 

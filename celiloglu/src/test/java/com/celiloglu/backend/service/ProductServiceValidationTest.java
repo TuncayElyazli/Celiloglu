@@ -234,24 +234,91 @@ class ProductServiceValidationTest {
     }
 
     @Test
-    @DisplayName("stockQuantity null, 0 və mənfi olduqda rədd edilir")
-    void testStockQuantity_Invalid_Rejected() {
+    @DisplayName("stockQuantity null və mənfi olduqda rədd edilir; 0 qəbul edilir (stok >= 0)")
+    void testStockQuantity_Validation() {
         ProductRequestDto dto = createValidDto();
 
+        // null rədd edilir
         dto.setStockQuantity(null);
         IllegalArgumentException exNull = assertThrows(IllegalArgumentException.class,
                 () -> productService.createProduct(dto));
         assertEquals("Stok miqdarı daxil edilməlidir!", exNull.getMessage());
 
-        dto.setStockQuantity(0);
-        IllegalArgumentException exZero = assertThrows(IllegalArgumentException.class,
-                () -> productService.createProduct(dto));
-        assertEquals("Stok miqdarı minimum 1 olmalıdır!", exZero.getMessage());
-
-        dto.setStockQuantity(-3);
+        // mənfi rədd edilir
+        dto.setStockQuantity(-1);
         IllegalArgumentException exNeg = assertThrows(IllegalArgumentException.class,
                 () -> productService.createProduct(dto));
-        assertEquals("Stok miqdarı minimum 1 olmalıdır!", exNeg.getMessage());
+        assertEquals("Stok miqdarı mənfi ola bilməz!", exNeg.getMessage());
+
+        dto.setStockQuantity(-10);
+        IllegalArgumentException exNeg10 = assertThrows(IllegalArgumentException.class,
+                () -> productService.createProduct(dto));
+        assertEquals("Stok miqdarı mənfi ola bilməz!", exNeg10.getMessage());
+
+        // 0 qəbul edilir (stok >= 0)
+        dto.setStockQuantity(0);
+        when(categoryRepository.findById(1L)).thenReturn(Optional.of(testCategory));
+        when(carBrandRepository.findById(2L)).thenReturn(Optional.of(testCarBrand));
+        when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        assertDoesNotThrow(() -> productService.createProduct(dto));
+    }
+
+    @Test
+    @DisplayName("Redaktə zamanı qiymət: null, 0, -10 rədd edilir; stok: mənfi rədd edilir, 0 qəbul edilir")
+    void testUpdateProduct_PriceAndStock_Validation() {
+        Product existing = new Product();
+        existing.setId(100L);
+        existing.setCode("YAG-101");
+        existing.setStockQuantity(10);
+        existing.setPrice(new BigDecimal("25.50"));
+
+        when(productRepository.findById(100L)).thenReturn(Optional.of(existing));
+
+        // Qiymət null rədd edilir
+        ProductRequestDto dtoNullPrice = createValidDto();
+        dtoNullPrice.setPrice(null);
+        IllegalArgumentException exNullPrice = assertThrows(IllegalArgumentException.class,
+                () -> productService.updateProduct(100L, dtoNullPrice));
+        assertEquals("Qiymət daxil edilməlidir!", exNullPrice.getMessage());
+
+        // Qiymət 0 rədd edilir
+        ProductRequestDto dtoZeroPrice = createValidDto();
+        dtoZeroPrice.setPrice(BigDecimal.ZERO);
+        IllegalArgumentException exZeroPrice = assertThrows(IllegalArgumentException.class,
+                () -> productService.updateProduct(100L, dtoZeroPrice));
+        assertEquals("Qiymət minimum 0.01 AZN olmalıdır!", exZeroPrice.getMessage());
+
+        // Qiymət -10 rədd edilir
+        ProductRequestDto dtoNegPrice = createValidDto();
+        dtoNegPrice.setPrice(new BigDecimal("-10.00"));
+        IllegalArgumentException exNegPrice = assertThrows(IllegalArgumentException.class,
+                () -> productService.updateProduct(100L, dtoNegPrice));
+        assertEquals("Qiymət minimum 0.01 AZN olmalıdır!", exNegPrice.getMessage());
+
+        // Stok null rədd edilir
+        ProductRequestDto dtoNullStock = createValidDto();
+        dtoNullStock.setStockQuantity(null);
+        IllegalArgumentException exNullStock = assertThrows(IllegalArgumentException.class,
+                () -> productService.updateProduct(100L, dtoNullStock));
+        assertEquals("Stok miqdarı daxil edilməlidir!", exNullStock.getMessage());
+
+        // Stok mənfi (-10) rədd edilir
+        ProductRequestDto dtoNegStock = createValidDto();
+        dtoNegStock.setStockQuantity(-10);
+        IllegalArgumentException exNegStock = assertThrows(IllegalArgumentException.class,
+                () -> productService.updateProduct(100L, dtoNegStock));
+        assertEquals("Stok miqdarı mənfi ola bilməz!", exNegStock.getMessage());
+
+        // Stok 0 qəbul edilir
+        ProductRequestDto dtoZeroStock = createValidDto();
+        dtoZeroStock.setStockQuantity(0);
+        when(productRepository.findByCode("YAG-101")).thenReturn(Optional.of(existing));
+        when(categoryRepository.findById(1L)).thenReturn(Optional.of(testCategory));
+        when(carBrandRepository.findById(2L)).thenReturn(Optional.of(testCarBrand));
+        when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        assertDoesNotThrow(() -> productService.updateProduct(100L, dtoZeroStock));
     }
 
     @Test

@@ -49,6 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         SecurityConfig.class,
         PasswordConfig.class,
         CustomUserDetailsService.class,
+        RoleBasedAuthenticationSuccessHandler.class,
         SecurityIntegrationTest.TestWebMvcConfig.class
 })
 @WebAppConfiguration

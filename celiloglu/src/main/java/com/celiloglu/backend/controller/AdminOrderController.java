@@ -141,6 +141,9 @@ public class AdminOrderController {
 
         List<PaymentResponseDto> payments = paymentService.getPaymentsByOrderId(id);
         BigDecimal paidAmount = paymentService.getPaidAmountByOrderId(id);
+        if (paidAmount == null) {
+            paidAmount = BigDecimal.ZERO;
+        }
         BigDecimal totalAmount = order.getTotalAmount() != null ? order.getTotalAmount() : BigDecimal.ZERO;
         BigDecimal remainingAmount = totalAmount.subtract(paidAmount);
         if (remainingAmount.compareTo(BigDecimal.ZERO) < 0) {

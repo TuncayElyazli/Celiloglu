@@ -960,3 +960,72 @@ input.no-spinner,
     -moz-appearance: textfield !important;
     appearance: textfield !important;
 }
+
+/* ========================================================
+   İSTİFADƏÇİ ÜST MENYU PROFİL GÖSTƏRİCİSİ (NAV PROFILE)
+   ======================================================== */
+.nav-profile-item {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    user-select: none;
+    cursor: default;
+}
+
+.nav-profile-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    color: #4b5563;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+@media (min-width: 640px) {
+    .nav-profile-circle {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+.nav-profile-circle svg {
+    width: 16px;
+    height: 16px;
+}
+
+html.dark .nav-profile-circle,
+.dark-mode .nav-profile-circle {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.18);
+    color: #e0e7ff;
+}
+
+.nav-profile-name {
+    font-size: 12px;
+    line-height: 1.2;
+    margin-top: 4px;
+    font-weight: 500;
+    color: #374151;
+    max-width: 65px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+}
+
+@media (min-width: 640px) {
+    .nav-profile-name {
+        max-width: 90px;
+    }
+}
+
+html.dark .nav-profile-name,
+.dark-mode .nav-profile-name {
+    color: #e0e7ff;
+}
